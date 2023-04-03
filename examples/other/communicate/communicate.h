@@ -2,7 +2,14 @@
 // Created by 紫意菌 on 4/2/23.
 //
 
-#ifndef AIDECK_GAP8_AUTOFLY_COMMUNICATE_H
-#define AIDECK_GAP8_AUTOFLY_COMMUNICATE_H
-
-#endif //AIDECK_GAP8_AUTOFLY_COMMUNICATE_H
+#ifndef __COMMUNICATE_H__
+#define __COMMUNICATE_H__
+void CPXListeningInit(void);
+void itoa(uint8_t number,char*numberArray);
+typedef struct
+{
+    uint16_t x;
+    uint16_t y;
+    uint16_t z;
+} coordinate_t;
+#endif //__COMMUNICATE_H__
