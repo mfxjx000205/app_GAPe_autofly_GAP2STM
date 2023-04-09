@@ -8,12 +8,7 @@
 #define EXPLORE_RESP 4
 #define PATH_RESP 5
 
-typedef struct
-{
-    uint16_t x;
-    uint16_t y;
-    uint16_t z;
-} coordinate_t;
+#define MSG_LENGTH 100
 
 typedef struct
 {

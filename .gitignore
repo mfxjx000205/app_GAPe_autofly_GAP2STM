@@ -1,4 +1,5 @@
 **/.vscode
+**/.idea
 
 # GAP8 build files
 examples/**/BUILD*

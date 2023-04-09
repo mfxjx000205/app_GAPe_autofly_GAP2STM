@@ -1,54 +1,84 @@
+#include <string.h>
 #include "pmsis.h"
 #include "bsp/bsp.h"
 #include "cpx.h"
+#include "octoMap.h"
+#include "octoTree.h"
 #include "communicate.h"
-#include <string.h>
 
 static CPXPacket_t packet;
 
-void CPXListeningInit(void)
+octoMap_t octoMapData;
+void mapInit()
+{
+    octoMap_t* octoMap = &octoMapData;
+    octoMapInit(octoMap);
+    char msg[MSG_LENGTH];
+    // print key data structure size
+    sprintf(msg, "[GAP8-Edge]sizeooof(octoMap) = %lu\n", sizeof(octoMap_t));
+    cpxPrintToConsole(LOG_TO_CRTP, msg);
+    sprintf(msg, "[GAP8-Edge]sizeof(octoNode) = %lu\n", sizeof(octoNode_t));
+    cpxPrintToConsole(LOG_TO_CRTP, msg);
+    // print octoMap
+    sprintf(msg, "[GAP8-Edge]octoMap.octoTree->center = (%d, %d, %d)\n", octoMap->octoTree->center.x, octoMap->octoTree->center.y, octoMap->octoTree->center.z);
+    cpxPrintToConsole(LOG_TO_CRTP, msg);
+    sprintf(msg, "[GAP8-Edge]octoMap.octoTree->origin = (%d, %d, %d)\n", octoMap->octoTree->origin.x, octoMap->octoTree->origin.y, octoMap->octoTree->origin.z);
+    cpxPrintToConsole(LOG_TO_CRTP, msg);
+    sprintf(msg, "[GAP8-Edge]octoMap.octoTree->resolution = %d\n", octoMap->octoTree->resolution);
+    cpxPrintToConsole(LOG_TO_CRTP, msg);
+    sprintf(msg, "[GAP8-Edge]octoMap.octoTree->maxDepth = %d\n", octoMap->octoTree->maxDepth);
+    cpxPrintToConsole(LOG_TO_CRTP, msg);
+    sprintf(msg, "[GAP8-Edge]octoMap.octoTree->width = %d\n", octoMap->octoTree->width);
+    cpxPrintToConsole(LOG_TO_CRTP, msg);
+    // print octoMap.octoTree->root
+    sprintf(msg, "[GAP8-Edge]octoMap.octoTree->root->children = %d\n", octoMap->octoTree->root->children);
+    cpxPrintToConsole(LOG_TO_CRTP, msg);
+    sprintf(msg, "[GAP8-Edge]octoMap.octoTree->root->logOdds = %d\n", octoMap->octoTree->root->logOdds);
+    cpxPrintToConsole(LOG_TO_CRTP, msg);
+    sprintf(msg, "[GAP8-Edge]octoMap.octoTree->root->isLeaf = %d\n", octoMap->octoTree->root->isLeaf);
+    cpxPrintToConsole(LOG_TO_CRTP, msg);
+    // print octoMap.octoNodeSet
+    sprintf(msg, "[GAP8-Edge]octoMap.octoNodeSet->freeQueueEntry = %d, octoMap.octoNodeSet->fullQueueEntry = %d\n", octoMap->octoNodeSet->freeQueueEntry, octoMap->octoNodeSet->fullQueueEntry);
+    cpxPrintToConsole(LOG_TO_CRTP, msg);
+    // print the length and numFree and numOccupied
+    sprintf(msg, "[GAP8-Edge]octoMap.octoNodeSet->length = %d, octoMap.octoNodeSet->numFree = %d, octoMap.octoNodeSet->numOccupied = %d\n\n", octoMap->octoNodeSet->length, octoMap->octoNodeSet->numFree, octoMap->octoNodeSet->numOccupied);
+    cpxPrintToConsole(LOG_TO_CRTP, msg);
+}
+
+void CPXListeningTask(void)
 {
     cpxInit();
     cpxEnableFunction(CPX_F_APP);
+    mapInit();
+    octoMap_t* octoMap = &octoMapData;
+    char msg[MSG_LENGTH];
+
     while (1)
     {
-        cpxPrintToConsole(LOG_TO_CRTP, "[AD] Listening...\n");
-        cpxReceivePacketBlocking(CPX_F_APP,&packet);
-        uint8_t other_id=packet.data[0];
-        uint8_t reqType=packet.data[1];
-        coordinate_t coords[5];
-        memcpy(coords, &packet.data[2], packet.dataLength-2*sizeof(uint8_t));
-        char msg[50]="[AD] Get Msg from: ";
-        itoa(other_id,msg+ strlen(msg)-1);
-        strcat(msg," ,reqType: ");
-        msg[strlen(msg)]=reqType+'0';
-        strcat(msg," ,coord1: ");
-        char coord1[10];
-        coord1[0]='(';
-        coord1[1]=coords[0].x+'0';
-        coord1[2]=',';
-        coord1[3]=coords[0].y+'0';
-        coord1[4]=',';
-        coord1[5]=coords[0].z+'0';
-        coord1[6]=')';
-        coord1[7]='\n';
-        strcat(msg,coord1);
-        cpxPrintToConsole(LOG_TO_CRTP, msg);
+        cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Listening...\n");
+        cpxReceivePacketBlocking(CPX_F_APP, &packet);
+        uint8_t sourceId = packet.data[0];
+        uint8_t reqType = packet.data[1];
+        uint16_t seq = packet.data[2];
+        if (reqType == MAPPING_REQ) {
+            uint8_t mappingRequestPayloadLength = packet.data[3];
+            coordinate_pair_t mappingRequestPayload[mappingRequestPayloadLength];
+            memcpy(mappingRequestPayload, &packet.data[4], sizeof(coordinate_pair_t)*mappingRequestPayloadLength);
+            sprintf(msg, "[GAP8-Edge]Receive CPX mapping request from: %d, seq: %d, payloadLength: %d\n", sourceId, seq, mappingRequestPayloadLength);
+            for (int i = 0; i < mappingRequestPayloadLength; i++) {
+                sprintf(msg, "[GAP8-Edge]Coordinate pair raycasted: (%d, %d, %d), (%d, %d, %d)\n",
+                    mappingRequestPayload[i].startPoint.x, mappingRequestPayload[i].startPoint.y, mappingRequestPayload[i].startPoint.z,
+                    mappingRequestPayload[i].endPoint.x, mappingRequestPayload[i].endPoint.y, mappingRequestPayload[i].endPoint.z);
+                cpxPrintToConsole(LOG_TO_CRTP, msg);
+                octoTreeRayCasting(octoMap->octoTree, octoMap, &mappingRequestPayload[i].startPoint, &mappingRequestPayload[i].endPoint);
+            }
+        } else {
+            sprintf(msg, "[GAP8-Edge]Receive CPX other request from: %d, seq: %d, reqType: %d\n", sourceId, seq, reqType);
+            cpxPrintToConsole(LOG_TO_CRTP, msg);
+        }
     }
 }
-void itoa(uint8_t number,char*numberArray)
-{
-    uint8_t n=0,temp=number;
-    while(temp>0){
-        temp/=10;
-        n++;
-    }
-    for (int8_t i = n-1; i >= 0; --i, number /= 10)
-    {
-        numberArray[i] = (number % 10) + '0';
-    }
-    return;
-}
+
 //bool SendCoords(coordinate_t* coords){
 //
 //    // Initialize the p2p packet
@@ -91,5 +121,5 @@ void itoa(uint8_t number,char*numberArray)
 int main(void)
 {
     pi_bsp_init();
-  return pmsis_kickoff((void *)CPXListeningInit);
+    return pmsis_kickoff((void *)CPXListeningTask);
 }
