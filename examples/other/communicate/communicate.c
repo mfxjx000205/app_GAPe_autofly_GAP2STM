@@ -7,42 +7,24 @@
 #include "communicate.h"
 
 static CPXPacket_t packet;
-
 octoMap_t octoMapData;
+
 void mapInit()
 {
     octoMap_t* octoMap = &octoMapData;
     octoMapInit(octoMap);
-    char msg[MSG_LENGTH];
-    // print key data structure size
-    sprintf(msg, "[GAP8-Edge]sizeooof(octoMap) = %lu\n", sizeof(octoMap_t));
-    cpxPrintToConsole(LOG_TO_CRTP, msg);
-    sprintf(msg, "[GAP8-Edge]sizeof(octoNode) = %lu\n", sizeof(octoNode_t));
-    cpxPrintToConsole(LOG_TO_CRTP, msg);
+
     // print octoMap
-    sprintf(msg, "[GAP8-Edge]octoMap.octoTree->center = (%d, %d, %d)\n", octoMap->octoTree->center.x, octoMap->octoTree->center.y, octoMap->octoTree->center.z);
-    cpxPrintToConsole(LOG_TO_CRTP, msg);
-    sprintf(msg, "[GAP8-Edge]octoMap.octoTree->origin = (%d, %d, %d)\n", octoMap->octoTree->origin.x, octoMap->octoTree->origin.y, octoMap->octoTree->origin.z);
-    cpxPrintToConsole(LOG_TO_CRTP, msg);
-    sprintf(msg, "[GAP8-Edge]octoMap.octoTree->resolution = %d\n", octoMap->octoTree->resolution);
-    cpxPrintToConsole(LOG_TO_CRTP, msg);
-    sprintf(msg, "[GAP8-Edge]octoMap.octoTree->maxDepth = %d\n", octoMap->octoTree->maxDepth);
-    cpxPrintToConsole(LOG_TO_CRTP, msg);
-    sprintf(msg, "[GAP8-Edge]octoMap.octoTree->width = %d\n", octoMap->octoTree->width);
-    cpxPrintToConsole(LOG_TO_CRTP, msg);
-    // print octoMap.octoTree->root
-    sprintf(msg, "[GAP8-Edge]octoMap.octoTree->root->children = %d\n", octoMap->octoTree->root->children);
-    cpxPrintToConsole(LOG_TO_CRTP, msg);
-    sprintf(msg, "[GAP8-Edge]octoMap.octoTree->root->logOdds = %d\n", octoMap->octoTree->root->logOdds);
-    cpxPrintToConsole(LOG_TO_CRTP, msg);
-    sprintf(msg, "[GAP8-Edge]octoMap.octoTree->root->isLeaf = %d\n", octoMap->octoTree->root->isLeaf);
-    cpxPrintToConsole(LOG_TO_CRTP, msg);
-    // print octoMap.octoNodeSet
-    sprintf(msg, "[GAP8-Edge]octoMap.octoNodeSet->freeQueueEntry = %d, octoMap.octoNodeSet->fullQueueEntry = %d\n", octoMap->octoNodeSet->freeQueueEntry, octoMap->octoNodeSet->fullQueueEntry);
-    cpxPrintToConsole(LOG_TO_CRTP, msg);
-    // print the length and numFree and numOccupied
-    sprintf(msg, "[GAP8-Edge]octoMap.octoNodeSet->length = %d, octoMap.octoNodeSet->numFree = %d, octoMap.octoNodeSet->numOccupied = %d\n\n", octoMap->octoNodeSet->length, octoMap->octoNodeSet->numFree, octoMap->octoNodeSet->numOccupied);
-    cpxPrintToConsole(LOG_TO_CRTP, msg);
+    cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]sizeof(octoNode) = %lu\n", sizeof(octoNode_t));
+    cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]octoTree->center = (%d, %d, %d), origin = (%d, %d, %d), resolution = %d, maxDepth = %d, width = %d\n", 
+        octoMap->octoTree->center.x, octoMap->octoTree->center.y, octoMap->octoTree->center.z, 
+        octoMap->octoTree->origin.x, octoMap->octoTree->origin.y, octoMap->octoTree->origin.z,
+        octoMap->octoTree->resolution, octoMap->octoTree->maxDepth, octoMap->octoTree->width);
+    cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]root->children = %d, logOdds = %d, isLeaf = %d\n", 
+        octoMap->octoTree->root->children, octoMap->octoTree->root->logOdds, octoMap->octoTree->root->isLeaf);
+    cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]octoNodeSet->freeQE = %d, fullQE = %d, length = %d, numFree = %d, numOccupied = %d\n", 
+        octoMap->octoNodeSet->freeQueueEntry, octoMap->octoNodeSet->fullQueueEntry, 
+        octoMap->octoNodeSet->length, octoMap->octoNodeSet->numFree, octoMap->octoNodeSet->numOccupied);
 }
 
 void CPXListeningTask(void)
