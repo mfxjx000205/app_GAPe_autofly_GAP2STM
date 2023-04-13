@@ -47,9 +47,9 @@ void CPXListeningTask(void)
         uint16_t seq = c | b;
 
         if (reqType == MAPPING_REQ) {
-            uint8_t mappingRequestPayloadLength = packet.data[3];
+            uint8_t mappingRequestPayloadLength = packet.data[4];
             coordinate_pair_t mappingRequestPayload[mappingRequestPayloadLength];
-            memcpy(mappingRequestPayload, &packet.data[4], sizeof(coordinate_pair_t)*mappingRequestPayloadLength);
+            memcpy(mappingRequestPayload, &packet.data[5], sizeof(coordinate_pair_t)*mappingRequestPayloadLength);
             cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]First pair: (%d, %d, %d) - (%d, %d, %d)\n", 
                 mappingRequestPayload[0].startPoint.x, mappingRequestPayload[0].startPoint.y, mappingRequestPayload[0].startPoint.z,
                 mappingRequestPayload[0].endPoint.x, mappingRequestPayload[0].endPoint.y, mappingRequestPayload[0].endPoint.z);
