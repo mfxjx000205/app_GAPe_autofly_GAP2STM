@@ -33,7 +33,6 @@ void CPXListeningTask(void)
     cpxEnableFunction(CPX_F_APP);
     mapInit();
     octoMap_t* octoMap = &octoMapData;
-    char msg[MSG_LENGTH];
 
     while (1)
     {
@@ -46,59 +45,21 @@ void CPXListeningTask(void)
             uint8_t mappingRequestPayloadLength = packet.data[3];
             coordinate_pair_t mappingRequestPayload[mappingRequestPayloadLength];
             memcpy(mappingRequestPayload, &packet.data[4], sizeof(coordinate_pair_t)*mappingRequestPayloadLength);
-            sprintf(msg, "[GAP8-Edge]Receive CPX mapping request from: %d, seq: %d, payloadLength: %d\n", sourceId, seq, mappingRequestPayloadLength);
-            for (int i = 0; i < mappingRequestPayloadLength; i++) {
-                sprintf(msg, "[GAP8-Edge]Coordinate pair raycasted: (%d, %d, %d), (%d, %d, %d)\n",
-                    mappingRequestPayload[i].startPoint.x, mappingRequestPayload[i].startPoint.y, mappingRequestPayload[i].startPoint.z,
-                    mappingRequestPayload[i].endPoint.x, mappingRequestPayload[i].endPoint.y, mappingRequestPayload[i].endPoint.z);
-                cpxPrintToConsole(LOG_TO_CRTP, msg);
-                octoTreeRayCasting(octoMap->octoTree, octoMap, &mappingRequestPayload[i].startPoint, &mappingRequestPayload[i].endPoint);
-            }
+            cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]First pair: (%d, %d, %d) - (%d, %d, %d)\n", 
+                mappingRequestPayload[0].startPoint.x, mappingRequestPayload[0].startPoint.y, mappingRequestPayload[0].startPoint.z,
+                mappingRequestPayload[0].endPoint.x, mappingRequestPayload[0].endPoint.y, mappingRequestPayload[0].endPoint.z);
+
+            cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Receive CPX mapping request from: %d, seq: %d, payloadLength: %d\n", sourceId, seq, mappingRequestPayloadLength);
+
+            // update octotree
+            // for (int i = 0; i < mappingRequestPayloadLength; i++) {
+            //     octoTreeRayCasting(octoMap->octoTree, octoMap, &mappingRequestPayload[i].startPoint, &mappingRequestPayload[i].endPoint);
+            // }
         } else {
-            sprintf(msg, "[GAP8-Edge]Receive CPX other request from: %d, seq: %d, reqType: %d\n", sourceId, seq, reqType);
-            cpxPrintToConsole(LOG_TO_CRTP, msg);
+            cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Receive CPX other request from: %d, seq: %d, reqType: %d\n", sourceId, seq, reqType);
         }
     }
 }
-
-//bool SendCoords(coordinate_t* coords){
-//
-//    // Initialize the p2p packet
-//    static P2PPacket packet;
-//    packet.port=0x00;
-//
-//    // Get the current address of the crazyflie and obtain
-//    //   the last two digits and send it as the first byte
-//    //   of the payload
-//    uint64_t address = configblockGetRadioAddress();
-//    uint8_t my_id =(uint8_t)((address) & 0x00000000ff);
-//    packet.data[0]=my_id;
-//
-//    memcpy(&packet.data[1], coords, sizeof(coordinate_t)*COORDS_LENGTH);
-//
-//    // Set the size, which is the amount of bytes the payload with ID and the string
-//    packet.size=sizeof(coordinate_t)*COORDS_LENGTH+1;
-//    // Send the P2P packet
-//    DEBUG_PRINT("P2P Msg Sent by:%d, First Coord is: (%d,%d,%d)\n",my_id,coords[0].x,coords[0].y,coords[0].z);
-//    return radiolinkSendP2PPacketBroadcast(&packet);
-//}
-//void CPXSendCoords(void){
-//    coordinate_t coords[5];
-//    for(int i=0;i<5;i++){
-//        coords[i].x=i;
-//        coords[i].y=i+1;
-//        coords[i].z=i+2;
-//    }
-//    CPXPacket_t cpxPacket;
-//    cpxInitRoute(CPX_T_STM32,CPX_T_GAP8,CPX_F_APP,&cpxPacket.route);
-//    cpxPacket.dataLength=sizeof(coordinate_t)*COORDS_LENGTH;
-//    memcpy(cpxPacket.data, msg, cpxPacket.dataLength);
-//    while(1)
-//    {
-//        bool flag= cpxSendPacket(&cpxPacket,1000);
-//        DEBUG_PRINT("Send %s\n",flag==false?"timeout":"success");
-//    }
-//}
 
 int main(void)
 {
