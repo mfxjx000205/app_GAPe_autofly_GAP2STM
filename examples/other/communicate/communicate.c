@@ -40,7 +40,12 @@ void CPXListeningTask(void)
         cpxReceivePacketBlocking(CPX_F_APP, &packet);
         uint8_t sourceId = packet.data[0];
         uint8_t reqType = packet.data[1];
-        uint16_t seq = packet.data[2];
+        // Calculate the sequence number
+        uint8_t a = packet.data[2];
+        uint8_t b = packet.data[3];
+        uint8_t c = a << 8;
+        uint16_t seq = c | b;
+
         if (reqType == MAPPING_REQ) {
             uint8_t mappingRequestPayloadLength = packet.data[3];
             coordinate_pair_t mappingRequestPayload[mappingRequestPayloadLength];
@@ -52,9 +57,9 @@ void CPXListeningTask(void)
             cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Receive CPX mapping request from: %d, seq: %d, payloadLength: %d\n", sourceId, seq, mappingRequestPayloadLength);
 
             // update octotree
-            // for (int i = 0; i < mappingRequestPayloadLength; i++) {
-            //     octoTreeRayCasting(octoMap->octoTree, octoMap, &mappingRequestPayload[i].startPoint, &mappingRequestPayload[i].endPoint);
-            // }
+            for (int i = 0; i < mappingRequestPayloadLength; i++) {
+                octoTreeRayCasting(octoMap->octoTree, octoMap, &mappingRequestPayload[i].startPoint, &mappingRequestPayload[i].endPoint);
+            }
         } else {
             cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Receive CPX other request from: %d, seq: %d, reqType: %d\n", sourceId, seq, reqType);
         }
