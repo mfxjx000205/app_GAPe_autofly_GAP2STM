@@ -90,7 +90,7 @@ bool ProcessAndSend(){
     GAPTxSTM.dataLength = 4 + RespDataLength * sizeof(coordinate_t);
     cpxSendPacketBlocking(&GAPTxSTM);
     cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]: Send to STM32, ReqType = %d, Seq = %d, RespDataLength = %d\n\n", reqType, seq, RespDataLength);
-    flag=true;
+    flag=false;
     return flag;
 }
 void GAP8SendTask(void)
