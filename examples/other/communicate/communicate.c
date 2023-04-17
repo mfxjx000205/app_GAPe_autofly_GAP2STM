@@ -27,10 +27,10 @@ void mapInit()
         octoMap->octoNodeSet->length, octoMap->octoNodeSet->numFree, octoMap->octoNodeSet->numOccupied);
 }
 
-void CPXListeningTask(void)
+void GAP8ReceiveTask(void)
 {
-    cpxInit();
-    cpxEnableFunction(CPX_F_APP);
+    // cpxInit();
+    // cpxEnableFunction(CPX_F_APP);
     mapInit();
     octoMap_t* octoMap = &octoMapData;
     static uint16_t TotalPacketCount = 0;
@@ -132,21 +132,31 @@ bool ProcessAndSend(){
 
 void GAP8SendTask(void)
 {
-    pi_bsp_init();
-    cpxInit();
-    cpxEnableFunction(CPX_F_APP);
+    // pi_bsp_init();
+    // cpxInit();
+    // cpxEnableFunction(CPX_F_APP);
     while(1){
         
         bool flag = ProcessAndSend();
         cpxPrintToConsole(LOG_TO_CRTP, "flag = %d\n", flag);
-        pi_time_wait_us(1000*10000);
+        pi_time_wait_us(1000*100);
     }
 }
 
+void InitTask(void){
+    pi_bsp_init();
+    cpxInit();
+    cpxEnableFunction(CPX_F_APP);
+    while(1){
+    GAP8ReceiveTask();
+    ProcessAndSend();
+    pi_time_wait_us(1000 * 1000);
+    }
+}
 
 
 int main(void)
 {
     pi_bsp_init();
-    return pmsis_kickoff((void *)GAP8SendTask);
+    return pmsis_kickoff((void *)InitTask);
 }
