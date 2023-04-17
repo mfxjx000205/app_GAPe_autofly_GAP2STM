@@ -33,16 +33,45 @@ void CPXListeningTask(void)
     cpxEnableFunction(CPX_F_APP);
     mapInit();
     octoMap_t* octoMap = &octoMapData;
-    static uint16_t PacketCount = 0;
+    static uint16_t TotalPacketCount = 0;
+    static uint16_t Loss_UAV_1=0
+    static uint16_t Loss_UAV_2=0
+    static uint16_t Loss_UAV_3=0
     while (1)
     {
         cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Listening...\n");
         cpxReceivePacketBlocking(CPX_F_APP, &packet);
-        PacketCount++;
-        if(PacketCount % 10==0){
-            cpxPrintToConsole(LOG_TO_CRTP, "\n[GAP8-Edge]The GAP8 has processed %d Packet!\n\n", PacketCount);
+        // Packet Loss Rate Calculate Module
+        TotalPacketCount++;
+        if(TotalPacketCount % 10==0){
+            cpxPrintToConsole(LOG_TO_CRTP, "\n[GAP8-Edge]Packet Loss Total: The GAP8 has processed %d Packet!\n\n", TotalPacketCount);
         }
         uint8_t sourceId = packet.data[0];
+        switch (sourceId)
+        {
+        case 0x01:
+            Loss_UAV_1++;
+            if(TotalPacketCount % 50==0){
+                cpxPrintToConsole(LOG_TO_CRTP, "\n[GAP8-Edge]Packet Loss UAV1: The GAP8 has processed %d Packet!\n\n", Loss_UAV_1);
+                Loss_UAV_1 = 0;
+            }
+            break;
+        case 0x02:
+            Loss_UAV_2++;
+            if(TotalPacketCount % 50==0){
+                cpxPrintToConsole(LOG_TO_CRTP, "\n[GAP8-Edge]Packet Loss UAV2: The GAP8 has processed %d Packet!\n\n", Loss_UAV_2);
+                Loss_UAV_2 = 0;
+            }
+            break;
+        
+        case 0x03:
+            Loss_UAV_3++;
+            if(TotalPacketCount % 50==0){
+                cpxPrintToConsole(LOG_TO_CRTP, "\n[GAP8-Edge]Packet Loss UAV3: The GAP8 has processed %d Packet!\n\n", Loss_UAV_3);
+                Loss_UAV_3 = 0;
+            }
+            break;
+        }
         uint8_t reqType = packet.data[1];
         // Calculate the sequence number
         uint8_t a = packet.data[2];
