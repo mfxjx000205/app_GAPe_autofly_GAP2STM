@@ -16,6 +16,13 @@ typedef struct
     coordinate_t endPoint;
 } coordinate_pair_t;
 
+typedef struct{
+  uint8_t reqType;
+  uint8_t seq;
+  uint8_t PayloadDataLength;
+  coordinate_t data[80];
+} RespInfo_t;
+
 void CPXListeningInit(void);
 void itoa(uint8_t number,char*numberArray);
 #endif //__COMMUNICATE_H__
