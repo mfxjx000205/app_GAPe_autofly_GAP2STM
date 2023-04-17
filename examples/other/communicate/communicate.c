@@ -33,11 +33,15 @@ void CPXListeningTask(void)
     cpxEnableFunction(CPX_F_APP);
     mapInit();
     octoMap_t* octoMap = &octoMapData;
-
+    static uint16_t PacketCount = 0;
     while (1)
     {
         cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Listening...\n");
         cpxReceivePacketBlocking(CPX_F_APP, &packet);
+        PacketCount++;
+        if(PacketCount % 10==0){
+            cpxPrintToConsole(LOG_TO_CRTP, "\n[GAP8-Edge]The GAP8 has processed %d Packet!\n\n", PacketCount);
+        }
         uint8_t sourceId = packet.data[0];
         uint8_t reqType = packet.data[1];
         // Calculate the sequence number
@@ -66,12 +70,15 @@ void CPXListeningTask(void)
     }
 }
 
+
+
 bool ProcessAndSend(){
     bool flag = false;
     static RespInfo_t RespInfo = {0};
     RespInfo.reqType = EXPLORE_RESP;
+    //Initiate fake, need to be replaced by real data
     RespInfo.seq = 0;
-    RespInfo.PayloadDataLength = 2;
+    RespInfo.PayloadDataLength = 1;
     RespInfo.data[0].x = 1;
     RespInfo.data[0].y = 2;
     RespInfo.data[0].z = 3;
@@ -93,6 +100,7 @@ bool ProcessAndSend(){
     flag=true;
     return flag;
 }
+
 void GAP8SendTask(void)
 {
     pi_bsp_init();
