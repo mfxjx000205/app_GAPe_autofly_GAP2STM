@@ -17,11 +17,29 @@ typedef struct
 } coordinate_pair_t;
 
 typedef struct{
-  uint8_t reqType;
+  uint8_t destinationId;
   uint16_t seq;
-  uint8_t PayloadDataLength;
-  coordinate_t data[80];
+  coordinate_t data[MSG_LENGTH];
 } RespInfo_t;
+
+typedef struct
+{
+    uint8_t sourceId;
+    uint8_t destinationId;
+    uint8_t packetType;
+    uint16_t seq;
+    uint8_t mappingRequestPayloadLength;
+    mapping_req_payload_t mappingRequestPayload[MAPPING_REQUEST_PAYLOAD_LENGTH_LIMIT];
+} mapping_req_packet_t;
+
+typedef struct
+{
+    uint8_t sourceId;
+    uint8_t destinationId;
+    uint8_t packetType;
+    uint16_t seq;
+    explore_req_payload_t exploreRequestPayload;
+} explore_req_packet_t;
 
 void CPXListeningInit(void);
 void itoa(uint8_t number,char*numberArray);
