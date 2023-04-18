@@ -34,9 +34,9 @@ void GAP8ReceiveTask(void)
     mapInit();
     octoMap_t* octoMap = &octoMapData;
     static uint16_t TotalPacketCount = 0;
-    static uint16_t Loss_UAV_1=0
-    static uint16_t Loss_UAV_2=0
-    static uint16_t Loss_UAV_3=0
+    static uint16_t Loss_UAV_1 = 0;
+    static uint16_t Loss_UAV_2 = 0;
+    static uint16_t Loss_UAV_3=0;
     while (1)
     {
         cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Listening...\n");
@@ -114,16 +114,17 @@ bool ProcessAndSend(){
     // static RespInfo_t RespInfo = GetRespInfo();
     uint8_t sourceId = 0X3F;
     uint8_t reqType = RespInfo.reqType;
-    uint8_t seq = RespInfo.seq;
+    uint16_t seq = RespInfo.seq;
     uint8_t RespDataLength = RespInfo.PayloadDataLength;
     static CPXPacket_t GAPTxSTM;
     cpxInitRoute(CPX_T_GAP8, CPX_T_STM32, CPX_F_APP, &GAPTxSTM.route);
     GAPTxSTM.data[0] = sourceId;
     GAPTxSTM.data[1] = reqType;
-    GAPTxSTM.data[2] = seq;
-    GAPTxSTM.data[3] = RespDataLength;
-    memcpy(&GAPTxSTM.data[4], RespInfo.data, RespDataLength * sizeof(coordinate_t));
-    GAPTxSTM.dataLength = 4 + RespDataLength * sizeof(coordinate_t);
+    GAPTxSTM.data[2] = (uint8_t)(seq>>8);
+    GAPTxSTM.data[3] = (uint8_t)(seq);
+    GAPTxSTM.data[4] = RespDataLength;
+    memcpy(&GAPTxSTM.data[5], RespInfo.data, RespDataLength * sizeof(coordinate_t));
+    GAPTxSTM.dataLength = 5 + RespDataLength * sizeof(coordinate_t);
     cpxSendPacketBlocking(&GAPTxSTM);
     cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]: Send to STM32, ReqType = %d, Seq = %d, RespDataLength = %d\n\n", reqType, seq, RespDataLength);
     flag=true;

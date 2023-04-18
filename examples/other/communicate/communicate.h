@@ -18,7 +18,7 @@ typedef struct
 
 typedef struct{
   uint8_t reqType;
-  uint8_t seq;
+  uint16_t seq;
   uint8_t PayloadDataLength;
   coordinate_t data[80];
 } RespInfo_t;
