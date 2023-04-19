@@ -114,12 +114,12 @@ void processExplorePacket(){
 
 void SplitAndAssembleMapping(){
     memcpy(&mapping_req_packet, packet.data, sizeof(mapping_req_packet_t));
-    cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Receive mapping request! OctoMap processing...");
+    cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Receive mapping request! OctoMap processing...\n");
 }
 
 void SplitAndAssembleExplore(){
     memcpy(&explore_req_packet, packet.data, sizeof(explore_req_packet_t));
-    cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Receive explore request! OctoMap processing...");
+    cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Receive explore request! OctoMap processing...\n");
 }
 
 void ReceiveAndGive(void)
