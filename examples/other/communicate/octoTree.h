@@ -10,7 +10,7 @@
 #define TRUE 1
 #define FALSE 0
 
-octoTree_t* octoTreeInit(octoNodeSet_t* nodeSet);
+octoTree_t* octoTreeInit();
 void octoTreeInsertPoint(octoTree_t *octoTree, octoMap_t *octoMap, coordinate_t *point, uint8_t diffLogOdds);
 void octoTreeRayCasting(octoTree_t *octoTree, octoMap_t *octoMap, coordinate_t *startPoint, coordinate_t *endPoint);
 uint8_t octoTreeGetLogProbability(octoTree_t *octoTree, octoMap_t *octoMap, coordinate_t *point);

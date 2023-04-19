@@ -1,5 +1,7 @@
 #pragma once
 #include "stdbool.h"
+#include "pmsis.h"
+#include "bsp/bsp.h"
 #define MAX_QUEUE_SIZE 100
 
 typedef struct{

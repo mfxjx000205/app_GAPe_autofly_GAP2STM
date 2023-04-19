@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include "octoNodeSet.h"
 #include "octoNode.h"
-#include "debug.h"
+#include "cpx.h"
 void octoNodeSetInit(octoNodeSet_t *nodeSet)
 {
-    DEBUG_PRINT("octoNodeSetInit\n");
+    cpxPrintToConsole(LOG_TO_CRTP,"octoNodeSetInit\n");
     setIndex_t i;
     nodeSet->freeQueueEntry = 0;
     nodeSet->fullQueueEntry = -1;
@@ -33,7 +33,7 @@ setIndex_t octoNodeSetMalloc(octoNodeSet_t *nodeSet)
 {
     if (nodeSet->freeQueueEntry == -1)
     {
-        DEBUG_PRINT("Full of sets!!! can not malloc!!!\n");
+        cpxPrintToConsole(LOG_TO_CRTP,"Full of sets!!! can not malloc!!!\n");
         return -1;
     }
     else

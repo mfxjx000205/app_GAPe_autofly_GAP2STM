@@ -1,26 +1,15 @@
+#include <math.h>
 #include "stdlib.h"
-#include "debug.h"
 #include <stdint.h>
+#include "pmsis.h"
+#include "bsp/bsp.h"
 
-#include "log.h"
-#include "math.h"
 #include "auxiliary_tool.h"
 #include "octoMap.h"
 #include "octoTree.h"
+#include "cpx.h"
+//#include "math.h"
 
-void get_measurement(example_measure_t *measurement)
-{
-    // distance unit: cm
-    measurement->data[0] = logGetFloat(logGetVarId("range", "front")) / 10;
-    measurement->data[1] = logGetFloat(logGetVarId("range", "back")) / 10;
-    // measurement->up = logGetFloat(logGetVarId("range","up")) / 10;
-    measurement->data[2] = logGetFloat(logGetVarId("range", "left")) / 10;
-    measurement->data[3] = logGetFloat(logGetVarId("range", "right")) / 10;
-
-    measurement->pitch = logGetFloat(logGetVarId("stabilizer", "pitch"));
-    measurement->roll = logGetFloat(logGetVarId("stabilizer", "roll"));
-    measurement->yaw = logGetFloat(logGetVarId("stabilizer", "yaw"));
-}
 
 double caldistance(coordinate_t *A, coordinate_t *B)
 {
@@ -83,7 +72,7 @@ bool cal_Point(example_measure_t *measurement, coordinateF_t *start_point, range
         }
         break;
     default:
-        DEBUG_PRINT("wrong input direction\n");
+        cpxPrintToConsole(LOG_TO_CRTP,"wrong input direction\n");
         break;
     }
     return FALSE;
@@ -136,7 +125,7 @@ bool cal_PointByLength(float length, float pitch, float roll, float yaw, coordin
     }
     break;
     default:
-        DEBUG_PRINT("wrong input direction\n");
+        cpxPrintToConsole(LOG_TO_CRTP,"wrong input direction\n");
         break;
     }
     return FALSE;

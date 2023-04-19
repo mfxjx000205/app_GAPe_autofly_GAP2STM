@@ -1,3 +1,8 @@
+
+#include <math.h>
+#include <stdlib.h>
+#include "pmsis.h"
+#include "bsp/bsp.h"
 #include "compute_tool.h"
 #include "config_autofly.h"
 #include "octoMap.h"
@@ -5,9 +10,12 @@
 #include "octoNodeSet.h"
 #include "octoNode.h"
 #include "circularQueue.h"
+#include "coordinateQueue.h"
 #include "auxiliary_tool.h"
 #include "coordinateQueue.h"
+#include "cpx.h"
 
+//#include "../../../../aideck-latest/gap_riscv_toolchain_ubuntu/riscv32-unknown-elf/sys-include/math.h"
 #define PROBABILITY_MEM(octomap) (double)octomap->octoNodeSet->length / NODE_SET_SIZE
 
 void UAVInit(uav_t* uav){
@@ -15,8 +23,8 @@ void UAVInit(uav_t* uav){
         uav->direction_weight[i] = 1;
     }
     uav->lastdir = 0;
-    QueueInit(&uav->loops);
-    CoordinateQueueInit(&uav->paths);
+    initQueue(&uav->queue);
+    initCoordinateQueue(&uav->paths);
 }
 
 void CalCandidates(coordinateF_t *candidates, example_measure_t *measurement, coordinateF_t *current_F)
@@ -79,11 +87,11 @@ bool CalBestCandinates(octoMap_t *octoMap,example_measure_t *measurement, coordi
         uav->direction_weight[dir_next] = DIRECTION_AWARD;
         uav->direction_weight[(uav->lastdir)] = 1;
         (uav->lastdir) = dir_next;
-        push_CoordinateQueue(uav->paths, candinates[dir_next]);
+        push_CoordinateQueue(&uav->paths, candinates[dir_next]);
         return true;
     }
     else{
-        DEBUG_PRINT("no next point\n");
+        cpxPrintToConsole(LOG_TO_CRTP,"no next point\n");
         return false;
     }
 }
@@ -104,7 +112,7 @@ rangeDirection_t GetRandomDir(example_measure_t *measurement)
     dir = (rangeDirection_t)rand() % 6;
     ++i;
     if (i == 20)
-        return -1;
+        return 10;
     if (measurement->data[dir] > measurement->data[maxdir])
         maxdir = dir;
     return maxdir;
@@ -112,8 +120,8 @@ rangeDirection_t GetRandomDir(example_measure_t *measurement)
 
 void JumpLocalOp(coordinateF_t *current_point, example_measure_t* measurement,CoordinateQueue_t* paths){
     rangeDirection_t dir = GetRandomDir(measurement);
-    if(dir == -1){
-        DEBUG_PRINT("no next dir\n");
+    if(dir == 10){
+        cpxPrintToConsole(LOG_TO_CRTP,"no next dir\n");
         return;
     }
     // rangeDirection_t dir = rand()%6;
@@ -128,16 +136,19 @@ void JumpLocalOp(coordinateF_t *current_point, example_measure_t* measurement,Co
     }
 }
 
-bool GetNextPoint(CoordinateQueue_t* paths, coordinateF_t* next_point){
+bool GetNextPoint(CoordinateQueue_t* paths, coordinate_t* next_point){
     if(isCoordinateQueueEmpty(paths)){
         return false;
     }
     else{
-        *next_point = pop_CoordinateQueue(paths);
+        coordinateF_t item_point = pop_CoordinateQueue(paths);
+        next_point->x = item_point.x;
+        next_point->y = item_point.y;
+        next_point->z = item_point.z;
         return true;
     }
 }
 
-void UpdateMap(octoMap_t* octoMap, coordinate_t* current_I, coordinateF_t* end_point){
+void UpdateMap(octoMap_t* octoMap, coordinate_t* current_I, coordinate_t* end_point){
     octoTreeRayCasting(octoMap->octoTree, octoMap, current_I, end_point); 
 }

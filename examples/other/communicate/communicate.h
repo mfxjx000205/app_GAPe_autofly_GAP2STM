@@ -5,6 +5,8 @@
 #include "compute_tool.h"
 #include "config_autofly.h"
 #include "coordinateQueue.h"
+#include "pmsis.h"
+#include "bsp/bsp.h"
 
 #define MAPPING_REQ 1
 #define EXPLORE_REQ 2
@@ -13,7 +15,7 @@
 #define PATH_RESP 5
 
 #define MSG_LENGTH 10
-
+#define MAPPING_REQUEST_PAYLOAD_LENGTH_LIMIT 4
 typedef struct
 {
     coordinate_t endPoint;

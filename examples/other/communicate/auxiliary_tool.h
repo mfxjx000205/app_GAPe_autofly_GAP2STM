@@ -1,6 +1,7 @@
 #pragma once
 #include "octoMap.h"
-#include "range.h"
+#include "pmsis.h"
+#include "bsp/bsp.h"
 typedef struct
 {
     float x;
@@ -23,6 +24,8 @@ typedef struct
     float pitch;
     float yaw;
 } example_measure_t;
+
+//math function
 
 double caldistance(coordinate_t* A,coordinate_t* B);
 

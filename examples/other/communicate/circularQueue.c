@@ -1,7 +1,8 @@
 #include "stdlib.h"
 #include "circularQueue.h"
-#include "debug.h"
-
+#include "cpx.h"
+#include "pmsis.h"
+#include "bsp/bsp.h"
 void initQueue(Queue_t *q) {
     q->front = 0;
     q->tail = 0;
@@ -10,7 +11,7 @@ void initQueue(Queue_t *q) {
 
 void push(Queue_t *queue, short data){
     if(isQueueFull(queue)){
-        DEBUG_PRINT("Queue is full!\n");
+        cpxPrintToConsole(LOG_TO_CRTP,"Queue is full!\n");
         return;
     }
     queue->data[queue->tail] = data;
@@ -20,7 +21,7 @@ void push(Queue_t *queue, short data){
 
 short pop(Queue_t *queue){
     if(isQueueEmpty(queue)){
-        DEBUG_PRINT("Queue is empty!\n");
+        cpxPrintToConsole(LOG_TO_CRTP,"Queue is empty!\n");
         return -1;
     }
     short data = queue->data[queue->front];
