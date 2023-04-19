@@ -5,7 +5,7 @@
 static unsigned long next=1;
 
 
-double fmin(double a,double b){
+double Myfmin(double a,double b){
     if (a>b){
         return b;
     }else{
@@ -13,7 +13,7 @@ double fmin(double a,double b){
     }
 }
 
-double fmax(double a,double b){
+double Myfmax(double a,double b){
     if(a>b){
         return a;
     }else{
@@ -21,7 +21,7 @@ double fmax(double a,double b){
     }
 }
 
-double pow(double a,int n)
+double Mypow(double a,int n)
 {
     if(n<0) return 1/pow(a,-n);
     double res = 1.0;
@@ -34,7 +34,7 @@ double pow(double a,int n)
     return res;
 }
 
-double sin(double x)
+double Mysin(double x)
 {
     double fl = 1;
     if(x>2*PI || x<-2*PI) x -= (int)(x/(2*PI))*2*PI;
@@ -54,7 +54,7 @@ double sin(double x)
     else return fl*(x - pow(x,3)/6 + pow(x,5)/120 - pow(x,7)/5040 +pow(x,9)/362880);
 }
 
-double cos(double x)
+double Mycos(double x)
 {
     double fl = 1;
     if(x>2*PI || x<-2*PI) x -= (int)(x/(2*PI))*2*PI;
@@ -74,7 +74,7 @@ double cos(double x)
     else return fl*(1 - pow(x,2)/2 + pow(x,4)/24 - pow(x,6)/720 + pow(x,8)/40320);
 }
 
-int rand(){
+int Myrand(){
     next=next*1103515245+12345;
     return((unsigned)(next/65536)%32768);
 }

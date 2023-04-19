@@ -14,6 +14,7 @@
 #include "auxiliary_tool.h"
 #include "coordinateQueue.h"
 #include "cpx.h"
+#include "math1.h"
 
 //#include "../../../../aideck-latest/gap_riscv_toolchain_ubuntu/riscv32-unknown-elf/sys-include/math.h"
 #define PROBABILITY_MEM(octomap) (double)octomap->octoNodeSet->length / NODE_SET_SIZE
@@ -99,17 +100,17 @@ bool CalBestCandinates(octoMap_t *octoMap,example_measure_t *measurement, coordi
 rangeDirection_t GetRandomDir(example_measure_t *measurement)
 {
     // Randomly sample twice to choose the larger
-    rangeDirection_t dir = (rangeDirection_t)rand() % 6;
-    rangeDirection_t maxdir = (rangeDirection_t)rand() % 6;
+    rangeDirection_t dir = (rangeDirection_t)Myrand() % 6;
+    rangeDirection_t maxdir = (rangeDirection_t)Myrand() % 6;
     int i = 0;
     // Guaranteed to get a feasible direction
     while (measurement->data[maxdir] < STRIDE + AVOID_DISTANCE && i < 20)
     {
-        maxdir = (rangeDirection_t)rand() % 6;
+        maxdir = (rangeDirection_t)Myrand() % 6;
         ++i;
     }
     // Try to get a better and feasible direction
-    dir = (rangeDirection_t)rand() % 6;
+    dir = (rangeDirection_t)Myrand() % 6;
     ++i;
     if (i == 20)
         return 10;
@@ -124,7 +125,7 @@ void JumpLocalOp(coordinateF_t *current_point, example_measure_t* measurement,Co
         cpxPrintToConsole(LOG_TO_CRTP,"no next dir\n");
         return;
     }
-    // rangeDirection_t dir = rand()%6;
+    // rangeDirection_t dir = Myrand()%6;
     float length = measurement->data[dir];
     coordinateF_t item_start_point = {current_point->x,current_point->y,current_point->z};
     coordinateF_t item_end_point;
