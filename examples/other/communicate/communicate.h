@@ -17,9 +17,12 @@ typedef struct
 } coordinate_pair_t;
 
 typedef struct{
-  uint8_t destinationId;
-  uint16_t seq;
-  coordinate_t data[MSG_LENGTH];
+    uint8_t sourceId;
+    uint8_t reqType;
+    uint8_t destinationId;
+    uint16_t seq;
+    uint8_t msgLength;
+    coordinate_t data[MSG_LENGTH];
 } RespInfo_t;
 
 typedef struct

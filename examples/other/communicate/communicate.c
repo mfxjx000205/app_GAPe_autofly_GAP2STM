@@ -5,11 +5,13 @@
 #include "octoMap.h"
 #include "octoTree.h"
 #include "communicate.h"
+#define GAP8Edge 0x3F
 
 static CPXPacket_t packet;
 octoMap_t octoMapData;
-static mapping_req_packet_t mapping_req_packet={0};
-static explore_req_packet_t explore_req_packet={0};
+static mapping_req_packet_t mapping_req_packet;
+static explore_req_packet_t explore_req_packet;
+static RespInfo_t RespInfo;
 
 void mapInit()
 {
@@ -89,7 +91,7 @@ void ReceiveAndGive(void)
         if(ReqType==MAPPING_REQ){
             SplitAndAssembleMapping();
             //process
-            //generate RespInfo_t
+            
         }else{
             SplitAndAssembleExplore();
             //process
@@ -100,56 +102,32 @@ void ReceiveAndGive(void)
 
 
 
-bool ProcessAndSend(){
-    bool flag = false;
-    static RespInfo_t RespInfo = {0};
-    RespInfo.reqType = EXPLORE_RESP;
-    //Initiate fake, need to be replaced by real data
-    RespInfo.seq = 0;
-    RespInfo.PayloadDataLength = 1;
-    RespInfo.data[0].x = 1;
-    RespInfo.data[0].y = 2;
-    RespInfo.data[0].z = 3;
-    // static RespInfo_t RespInfo = GetRespInfo();
-    uint8_t sourceId = 0X3F;
-    uint8_t reqType = RespInfo.reqType;
-    uint16_t seq = RespInfo.seq;
-    uint8_t RespDataLength = RespInfo.PayloadDataLength;
-    static CPXPacket_t GAPTxSTM;
+bool GetAndSend(){
+    bool Sendflag = false;
+    RespInfo = GetRespInfo();
+    static CPXPacket_t GAP2STMTx;
     cpxInitRoute(CPX_T_GAP8, CPX_T_STM32, CPX_F_APP, &GAPTxSTM.route);
-    GAPTxSTM.data[0] = sourceId;
-    GAPTxSTM.data[1] = reqType;
-    GAPTxSTM.data[2] = (uint8_t)(seq>>8);
-    GAPTxSTM.data[3] = (uint8_t)(seq);
-    GAPTxSTM.data[4] = RespDataLength;
-    memcpy(&GAPTxSTM.data[5], RespInfo.data, RespDataLength * sizeof(coordinate_t));
-    GAPTxSTM.dataLength = 5 + RespDataLength * sizeof(coordinate_t);
+    memcpy(&GAPTxSTM.data, &RespInfo, sizeof(RespInfo_t));
+    GAPTxSTM.dataLength = sizeof(RespInfo_t);
     cpxSendPacketBlocking(&GAPTxSTM);
-    cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]: Send to STM32, ReqType = %d, Seq = %d, RespDataLength = %d\n\n", reqType, seq, RespDataLength);
+    cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]: Send to STM32, Destination = %d, Seq = %d \n\n", RespInfo.destinationId, RespInfo.seq);
     flag=true;
     return flag;
 }
 
 void GAP8SendTask(void)
 {
-    // pi_bsp_init();
-    // cpxInit();
-    // cpxEnableFunction(CPX_F_APP);
-    while(1){
-        
-        bool flag = ProcessAndSend();
+    while(1){     
+        bool flag = GetAndSend();
         cpxPrintToConsole(LOG_TO_CRTP, "flag = %d\n", flag);
         pi_time_wait_us(1000*100);
     }
 }
 
 void InitTask(void){
-    pi_bsp_init();
-    cpxInit();
-    cpxEnableFunction(CPX_F_APP);
     while(1){
     ReceiveAndGive();
-    ProcessAndSend();
+    GetAndSend();
     pi_time_wait_us(1000 * 1000);
     }
 }
@@ -158,5 +136,7 @@ void InitTask(void){
 int main(void)
 {
     pi_bsp_init();
+    cpxInit();
+    cpxEnableFunction(CPX_F_APP);
     return pmsis_kickoff((void *)InitTask);
 }
