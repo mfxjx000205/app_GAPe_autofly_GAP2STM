@@ -14,13 +14,16 @@
 
 #define MSG_LENGTH 10
 
+typedef struct
+{
+    coordinate_t endPoint;
+} explore_resp_payload_t;
 typedef struct{
     uint8_t sourceId;
-    uint8_t reqType;
     uint8_t destinationId;
+    uint8_t reqType;
     uint16_t seq;
-    uint8_t msgLength;
-    coordinate_t data[MSG_LENGTH];
+    explore_resp_payload_t exploreResponsePayload;
 } RespInfo_t;
 
 typedef struct

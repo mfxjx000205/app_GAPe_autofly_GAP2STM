@@ -89,7 +89,7 @@ void ReceiveAndGive(void)
         }
 
         //Split and Assemble the packet to OctoMAP process
-        uint8_t ReqType = packet.data[1];
+        uint8_t ReqType = packet.data[2];
         if(ReqType==MAPPING_REQ){
             SplitAndAssembleMapping();
             processMappingPacket();
@@ -102,7 +102,7 @@ void ReceiveAndGive(void)
 
 bool GetAndSend(){
     bool Sendflag = false;
-    RespInfo = GetRespInfo();
+    //RespInfo = GetRespInfo();
     static CPXPacket_t GAP2STMTx;
     cpxInitRoute(CPX_T_GAP8, CPX_T_STM32, CPX_F_APP, &GAPTxSTM.route);
     memcpy(&GAPTxSTM.data, &RespInfo, sizeof(RespInfo_t));
@@ -180,8 +180,7 @@ void processExplorePacket(){
         RespInfo.destinationId = uav_id;
         RespInfo.seq = explore_req_packet.seq;
         RespInfo.type = EXPLORE_RESP;
-        RespInfo.msgLength = 1;
-        RespInfo.data[0] = nextpoint;
+        RespInfo.exploreResponsePayload.endPoint = nextpoint;
         return ;
     }
     else{
