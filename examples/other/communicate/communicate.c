@@ -5,9 +5,13 @@
 #include "octoMap.h"
 #include "octoTree.h"
 #include "communicate.h"
+#define GAP8Edge 0x3F
 
 static CPXPacket_t packet;
 octoMap_t octoMapData;
+static mapping_req_packet_t mapping_req_packet;
+static explore_req_packet_t explore_req_packet;
+static RespInfo_t RespInfo;
 
 void mapInit()
 {
@@ -27,20 +31,29 @@ void mapInit()
         octoMap->octoNodeSet->length, octoMap->octoNodeSet->numFree, octoMap->octoNodeSet->numOccupied);
 }
 
-void GAP8ReceiveTask(void)
+void SplitAndAssembleMapping(){
+    memcpy(&mapping_req_packet, packet.data, sizeof(mapping_req_packet_t));
+    cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Receive mapping request! OctoMap processing...");
+}
+
+void SplitAndAssembleExplore(){
+    memcpy(&explore_req_packet, packet.data, sizeof(explore_req_packet_t));
+    cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Receive explore request! OctoMap processing...");
+}
+
+void ReceiveAndGive(void)
 {
-    // cpxInit();
-    // cpxEnableFunction(CPX_F_APP);
     mapInit();
     octoMap_t* octoMap = &octoMapData;
     static uint16_t TotalPacketCount = 0;
     static uint16_t Loss_UAV_1 = 0;
     static uint16_t Loss_UAV_2 = 0;
-    static uint16_t Loss_UAV_3=0;
+    static uint16_t Loss_UAV_3 = 0;
     while (1)
     {
         cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Listening...\n");
         cpxReceivePacketBlocking(CPX_F_APP, &packet);
+        
         // Packet Loss Rate Calculate Module
         TotalPacketCount++;
         if(TotalPacketCount % 10==0){
@@ -72,85 +85,49 @@ void GAP8ReceiveTask(void)
             }
             break;
         }
-        uint8_t reqType = packet.data[1];
-        // Calculate the sequence number
-        uint8_t a = packet.data[2];
-        uint8_t b = packet.data[3];
-        uint16_t c = a << 8;
-        uint16_t seq = c | b;
 
-        if (reqType == MAPPING_REQ) {
-            uint8_t mappingRequestPayloadLength = packet.data[4];
-            coordinate_pair_t mappingRequestPayload[mappingRequestPayloadLength];
-            memcpy(mappingRequestPayload, &packet.data[5], sizeof(coordinate_pair_t)*mappingRequestPayloadLength);
-            cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]First pair: (%d, %d, %d) - (%d, %d, %d)\n", 
-                mappingRequestPayload[0].startPoint.x, mappingRequestPayload[0].startPoint.y, mappingRequestPayload[0].startPoint.z,
-                mappingRequestPayload[0].endPoint.x, mappingRequestPayload[0].endPoint.y, mappingRequestPayload[0].endPoint.z);
-
-            cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Receive CPX mapping request from: %d, seq: %d, payloadLength: %d\n", sourceId, seq, mappingRequestPayloadLength);
-
-            // update octotree
-            for (int i = 0; i < mappingRequestPayloadLength; i++) {
-                octoTreeRayCasting(octoMap->octoTree, octoMap, &mappingRequestPayload[i].startPoint, &mappingRequestPayload[i].endPoint);
-            }
-        } else {
-            cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Receive CPX other request from: %d, seq: %d, reqType: %d\n", sourceId, seq, reqType);
+        //Split and Assemble the packet to OctoMAP process
+        uint8_t ReqType = packet.data[1];
+        if(ReqType==MAPPING_REQ){
+            SplitAndAssembleMapping();
+            //process
+            
+        }else{
+            SplitAndAssembleExplore();
+            //process
+            //generate RespInfo_t
         }
     }
 }
 
 
 
-bool ProcessAndSend(){
-    bool flag = false;
-    static RespInfo_t RespInfo = {0};
-    RespInfo.reqType = EXPLORE_RESP;
-    //Initiate fake, need to be replaced by real data
-    RespInfo.seq = 0;
-    RespInfo.PayloadDataLength = 1;
-    RespInfo.data[0].x = 1;
-    RespInfo.data[0].y = 2;
-    RespInfo.data[0].z = 3;
-    // static RespInfo_t RespInfo = GetRespInfo();
-    uint8_t sourceId = 0X3F;
-    uint8_t reqType = RespInfo.reqType;
-    uint16_t seq = RespInfo.seq;
-    uint8_t RespDataLength = RespInfo.PayloadDataLength;
-    static CPXPacket_t GAPTxSTM;
+bool GetAndSend(){
+    bool Sendflag = false;
+    RespInfo = GetRespInfo();
+    static CPXPacket_t GAP2STMTx;
     cpxInitRoute(CPX_T_GAP8, CPX_T_STM32, CPX_F_APP, &GAPTxSTM.route);
-    GAPTxSTM.data[0] = sourceId;
-    GAPTxSTM.data[1] = reqType;
-    GAPTxSTM.data[2] = (uint8_t)(seq>>8);
-    GAPTxSTM.data[3] = (uint8_t)(seq);
-    GAPTxSTM.data[4] = RespDataLength;
-    memcpy(&GAPTxSTM.data[5], RespInfo.data, RespDataLength * sizeof(coordinate_t));
-    GAPTxSTM.dataLength = 5 + RespDataLength * sizeof(coordinate_t);
+    memcpy(&GAPTxSTM.data, &RespInfo, sizeof(RespInfo_t));
+    GAPTxSTM.dataLength = sizeof(RespInfo_t);
     cpxSendPacketBlocking(&GAPTxSTM);
-    cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]: Send to STM32, ReqType = %d, Seq = %d, RespDataLength = %d\n\n", reqType, seq, RespDataLength);
+    cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]: Send to STM32, Destination = %d, Seq = %d \n\n", RespInfo.destinationId, RespInfo.seq);
     flag=true;
     return flag;
 }
 
 void GAP8SendTask(void)
 {
-    // pi_bsp_init();
-    // cpxInit();
-    // cpxEnableFunction(CPX_F_APP);
-    while(1){
-        
-        bool flag = ProcessAndSend();
+    while(1){     
+        bool flag = GetAndSend();
         cpxPrintToConsole(LOG_TO_CRTP, "flag = %d\n", flag);
         pi_time_wait_us(1000*100);
     }
 }
 
 void InitTask(void){
-    pi_bsp_init();
-    cpxInit();
-    cpxEnableFunction(CPX_F_APP);
     while(1){
-    GAP8ReceiveTask();
-    ProcessAndSend();
+    ReceiveAndGive();
+    GetAndSend();
     pi_time_wait_us(1000 * 1000);
     }
 }
@@ -159,5 +136,7 @@ void InitTask(void){
 int main(void)
 {
     pi_bsp_init();
+    cpxInit();
+    cpxEnableFunction(CPX_F_APP);
     return pmsis_kickoff((void *)InitTask);
 }
