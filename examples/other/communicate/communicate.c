@@ -6,12 +6,15 @@
 #include "octoTree.h"
 #include "communicate.h"
 #define GAP8Edge 0x3F
+#define AIDECK_ID 0x00
+#define UAVS_LIDAR_NUM 3
 
 static CPXPacket_t packet;
 octoMap_t octoMapData;
 static mapping_req_packet_t mapping_req_packet;
 static explore_req_packet_t explore_req_packet;
 static RespInfo_t RespInfo;
+uav_t uavs[UAVS_LIDAR_NUM];
 
 void mapInit()
 {
@@ -43,7 +46,6 @@ void SplitAndAssembleExplore(){
 
 void ReceiveAndGive(void)
 {
-    mapInit();
     octoMap_t* octoMap = &octoMapData;
     static uint16_t TotalPacketCount = 0;
     static uint16_t Loss_UAV_1 = 0;
@@ -90,17 +92,13 @@ void ReceiveAndGive(void)
         uint8_t ReqType = packet.data[1];
         if(ReqType==MAPPING_REQ){
             SplitAndAssembleMapping();
-            //process
-            
+            processMappingPacket();
         }else{
             SplitAndAssembleExplore();
-            //process
-            //generate RespInfo_t
+            processExplorePacket();
         }
     }
 }
-
-
 
 bool GetAndSend(){
     bool Sendflag = false;
@@ -125,13 +123,72 @@ void GAP8SendTask(void)
 }
 
 void InitTask(void){
+    for(int i=0;i<UAVS_LIDAR_NUM;++i){
+        UAVInit(uavs[i]);
+    }
+    mapInit();
     while(1){
-    ReceiveAndGive();
-    GetAndSend();
-    pi_time_wait_us(1000 * 1000);
+        ReceiveAndGive();
+        GetAndSend();
+        pi_time_wait_us(1000 * 1000);
     }
 }
 
+void processMappingPacket(){
+    short uav_id = mapping_req_packet.sourceId;
+    short len = mapping_req_packet.mappingRequestPayloadLength;
+    for (short i = 0; i < len; i++)
+    {
+        UpdateMap(&octoMapData,&mapping_req_packet.mappingRequestPayload[i].startPoint, &mapping_req_packet.mappingRequestPayload[i].endPoint);
+    }
+}
+
+void processExplorePacket(){
+    short uav_id = explore_req_packet.sourceId;
+    if(uav_id >= UAVS_LIDAR_NUM){
+        cpxPrintToConsole(LOG_TO_CRTP, "UavID error!\n");
+        return;
+    }
+    //计算新的路径点
+    coordinate_t currentI = explore_req_packet.exploreRequestPayload.startPoint;
+    coordinateF_t currentF = {currentI.x, currentI.y, currentI.z};
+    example_measure_t measurement = explore_req_packet.exploreRequestPayload.measurement;
+    short index_loop = ((currentI.x + currentI.y + currentI.z) / TREE_RESOLUTION) % WINDOW_SIZE;
+    ++uavs[uav_id].loops[index_loop];
+    if (uavs[uav_id].loops[index_loop] < MAX_LOOP)
+    {
+        push(&uavs[uav_id].queue, index_loop);
+        if (uavs[uav_id].queue.len >= WINDOW_SIZE)
+        {
+            index_loop = pop(&uavs[uav_id].queue);
+            --uavs[uav_id].loops[index_loop];
+        }
+        if(isCoordinateQueueEmpty(&uavs[uav_id].paths) && !CalBestCandinates(&octoMapData, &measurement, &currentI, &uavs[uav_id])){
+            initCoordinateQueue(&uavs[uav_id].paths);
+            JumpLocalOp(&currentF, &measurement, &uavs[uav_id].paths);
+        }
+    }
+    else
+    {
+        initCoordinateQueue(&paths);
+        JumpLocalOp(&currentF, &measurement, &uavs[uav_id].paths);
+    }
+    coordinate_t nextpoint;
+    //存在未行走的路径点
+    if(GetNextPoint(uavs[uav_id].paths, &nextpoint)){
+        RespInfo.sourceId = AIDECK_ID;
+        RespInfo.destinationId = uav_id;
+        RespInfo.seq = explore_req_packet.seq;
+        RespInfo.type = EXPLORE_RESP;
+        RespInfo.msgLength = 1;
+        RespInfo.data[0] = nextpoint;
+        return ;
+    }
+    else{
+        cpxPrintToConsole(LOG_TO_CRTP, "Uav%d doesn't have next point\n",uav_id);
+        return;
+    }
+}
 
 int main(void)
 {

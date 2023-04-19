@@ -4,12 +4,20 @@
 #include "octoTree.h"
 #include "octoNodeSet.h"
 #include "octoNode.h"
-#include "rrtConnect.h"
 #include "circularQueue.h"
 #include "auxiliary_tool.h"
 #include "coordinateQueue.h"
 
 #define PROBABILITY_MEM(octomap) (double)octomap->octoNodeSet->length / NODE_SET_SIZE
+
+void UAVInit(uav_t* uav){
+    for(int i = 0;i<6;++i){
+        uav->direction_weight[i] = 1;
+    }
+    uav->lastdir = 0;
+    QueueInit(&uav->loops);
+    CoordinateQueueInit(&uav->paths);
+}
 
 void CalCandidates(coordinateF_t *candidates, example_measure_t *measurement, coordinateF_t *current_F)
 {
@@ -31,7 +39,7 @@ void CalCandidates(coordinateF_t *candidates, example_measure_t *measurement, co
     }
 }
 
-bool CalBestCandinates(octoMap_t *octoMap,example_measure_t *measurement, coordinateF_t *current_point, float* direction_weight, short* lastdir, CoordinateQueue_t* paths){
+bool CalBestCandinates(octoMap_t *octoMap,example_measure_t *measurement, coordinateF_t *current_point, uav_t* uav){
     coordinateF_t candinates[6];
     coordinate_t item_point;
     double item_candinateCost = 0, max_candinateCost = 0;
@@ -60,7 +68,7 @@ bool CalBestCandinates(octoMap_t *octoMap,example_measure_t *measurement, coordi
         {
             item_sum.income_info = DISCIPLINE;
         }
-        item_candinateCost = (double)direction_weight[i] * (PROBABILITY_MEM(octoMap) * item_sum.cost_prune * COST_PRUNE_TIMES +
+        item_candinateCost = (double)uav->direction_weight[i] * (PROBABILITY_MEM(octoMap) * item_sum.cost_prune * COST_PRUNE_TIMES +
                                                     (1.0 - PROBABILITY_MEM(octoMap)) * item_sum.income_info * INCOME_INFO_TIMES);
         if (item_candinateCost > max_candinateCost){
             dir_next = i;
@@ -68,10 +76,10 @@ bool CalBestCandinates(octoMap_t *octoMap,example_measure_t *measurement, coordi
         }
     }
     if(dir_next != -1){
-        direction_weight[dir_next] = DIRECTION_AWARD;
-        direction_weight[(*lastdir)] = 1;
-        (*lastdir) = dir_next;
-        push_CoordinateQueue(paths, candinates[dir_next]);
+        uav->direction_weight[dir_next] = DIRECTION_AWARD;
+        uav->direction_weight[(uav->lastdir)] = 1;
+        (uav->lastdir) = dir_next;
+        push_CoordinateQueue(uav->paths, candinates[dir_next]);
         return true;
     }
     else{
@@ -133,5 +141,3 @@ bool GetNextPoint(CoordinateQueue_t* paths, coordinateF_t* next_point){
 void UpdateMap(octoMap_t* octoMap, coordinate_t* current_I, coordinateF_t* end_point){
     octoTreeRayCasting(octoMap->octoTree, octoMap, current_I, end_point); 
 }
-
-coordinate_t Func(octoMap_t* octoMap,coordinate_t* current,example_measure_t* measurement,Queue_t* loops,float* direction_weight,short* lastdir)

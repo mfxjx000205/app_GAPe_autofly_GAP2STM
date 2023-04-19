@@ -1,6 +1,10 @@
 // Created by Ziyi on 4/2/23.
 #ifndef __COMMUNICATE_H__
 #define __COMMUNICATE_H__
+#include "circularQueue.h"
+#include "compute_tool.h"
+#include "config_autofly.h"
+#include "coordinateQueue.h"
 
 #define MAPPING_REQ 1
 #define EXPLORE_REQ 2
@@ -8,13 +12,7 @@
 #define EXPLORE_RESP 4
 #define PATH_RESP 5
 
-#define MSG_LENGTH 100
-
-typedef struct
-{
-    coordinate_t startPoint;
-    coordinate_t endPoint;
-} coordinate_pair_t;
+#define MSG_LENGTH 10
 
 typedef struct{
     uint8_t sourceId;
@@ -24,6 +22,13 @@ typedef struct{
     uint8_t msgLength;
     coordinate_t data[MSG_LENGTH];
 } RespInfo_t;
+
+typedef struct
+{
+    coordinate_t startPoint;
+    coordinate_t endPoint;
+    uint8_t mergedNums;
+} mapping_req_payload_t;
 
 typedef struct
 {
@@ -37,12 +42,19 @@ typedef struct
 
 typedef struct
 {
+    coordinate_t startPoint;
+    example_measure_t measurement;
+} explore_req_payload_t;
+
+typedef struct
+{
     uint8_t sourceId;
     uint8_t destinationId;
     uint8_t packetType;
     uint16_t seq;
     explore_req_payload_t exploreRequestPayload;
 } explore_req_packet_t;
+
 
 void CPXListeningInit(void);
 void itoa(uint8_t number,char*numberArray);
