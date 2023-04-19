@@ -1,6 +1,7 @@
 #include <string.h>
 #include "pmsis.h"
 #include "bsp/bsp.h"
+#include "math1.h"
 #define PI 3.1415926
 static unsigned long next=1;
 
@@ -23,7 +24,7 @@ double Myfmax(double a,double b){
 
 double Mypow(double a,int n)
 {
-    if(n<0) return 1/pow(a,-n);
+    if(n<0) return 1/Mypow(a,-n);
     double res = 1.0;
     while(n)
     {
@@ -50,8 +51,8 @@ double Mysin(double x)
         x += PI;
         fl *= -1;
     }
-    if(x>PI/4) return cos(PI/2-x);
-    else return fl*(x - pow(x,3)/6 + pow(x,5)/120 - pow(x,7)/5040 +pow(x,9)/362880);
+    if(x>PI/4) return Mycos(PI/2-x);
+    else return fl*(x - Mypow(x,3)/6 + Mypow(x,5)/120 - Mypow(x,7)/5040 + Mypow(x,9)/362880);
 }
 
 double Mycos(double x)
@@ -70,8 +71,8 @@ double Mycos(double x)
         x += PI;
         fl *= -1;
     }
-    if(x>PI/4) return sin(PI/2-x);
-    else return fl*(1 - pow(x,2)/2 + pow(x,4)/24 - pow(x,6)/720 + pow(x,8)/40320);
+    if(x>PI/4) return Mysin(PI/2-x);
+    else return fl*(1 - Mypow(x,2)/2 + Mypow(x,4)/24 - Mypow(x,6)/720 + Mypow(x,8)/40320);
 }
 
 int Myrand(){
