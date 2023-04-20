@@ -66,6 +66,7 @@ void processMappingPacket(){
                 , mapping_req_packet.mappingRequestPayload[i].mergedNums
                 , uav_id);
     }
+    cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Process mapping packet successfully\n");
 }
 
 void processExplorePacket(){
@@ -74,7 +75,7 @@ void processExplorePacket(){
         cpxPrintToConsole(LOG_TO_CRTP, "UavID error!\n");
         return;
     }
-    //计算新的路径点
+    // Calculate new waypoint
     coordinate_t currentI = explore_req_packet.exploreRequestPayload.startPoint;
     coordinateF_t currentF = {currentI.x, currentI.y, currentI.z};
     example_measure_t measurement = explore_req_packet.exploreRequestPayload.measurement;
@@ -99,17 +100,25 @@ void processExplorePacket(){
         JumpLocalOp(&currentF, &measurement, &uavs[uav_id].paths);
     }
     coordinate_t nextpoint;
-    //存在未行走的路径点
+    // Have next waypoint
     if(GetNextPoint(&uavs[uav_id].paths, &nextpoint)){
         RespInfo.sourceId = AIDECK_ID;
         RespInfo.destinationId = uav_id;
         RespInfo.seq = explore_req_packet.seq;
         RespInfo.reqType = EXPLORE_RESP;
         RespInfo.exploreResponsePayload.endPoint = nextpoint;
-        return ;
+        cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Uav%d has next point\n", uav_id);
+
+        // Send response packet
+        static CPXPacket_t GAPTxSTM;
+        cpxInitRoute(CPX_T_GAP8, CPX_T_STM32, CPX_F_APP, &GAPTxSTM.route);
+        memcpy(&GAPTxSTM.data, &RespInfo, sizeof(RespInfo_t));
+        GAPTxSTM.dataLength = sizeof(RespInfo_t);
+        cpxSendPacketBlocking(&GAPTxSTM);
+        cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Send explore response packet, destinationId = %d, seq = %d\n\n", RespInfo.destinationId, RespInfo.seq);
     }
     else{
-        cpxPrintToConsole(LOG_TO_CRTP, "Uav%d doesn't have next point\n",uav_id);
+        cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Uav%d doesn't have next point\n\n",uav_id);
         return;
     }
 }
@@ -117,12 +126,14 @@ void processExplorePacket(){
 
 void SplitAndAssembleMapping(){
     memcpy(&mapping_req_packet, packet.data, sizeof(mapping_req_packet_t));
-    cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Receive mapping request! OctoMap processing...\n");
+    cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]CPX: Receive mapping request from: %d, seq: %d, payloadLength: %d\n", 
+        mapping_req_packet.sourceId, mapping_req_packet.seq, mapping_req_packet.mappingRequestPayloadLength);
 }
 
 void SplitAndAssembleExplore(){
     memcpy(&explore_req_packet, packet.data, sizeof(explore_req_packet_t));
-    cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Receive explore request! OctoMap processing...\n");
+    cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]CPX: Receive explore request from: %d, seq: %d\n", 
+        explore_req_packet.sourceId, explore_req_packet.seq);
 }
 
 void ReceiveAndGive(void)
@@ -166,13 +177,14 @@ void ReceiveAndGive(void)
         }
         break;
     default:
-        cpxPrintToConsole(LOG_TO_CRTP,"[GAP8-Edge]NO match ID!\n\n");
+        cpxPrintToConsole(LOG_TO_CRTP,"[GAP8-Edge]NO match sourceID!\n\n");
         break;
     }
 
-    //Split and Assemble the packet to OctoMAP process
+    // Split and Assemble the packet to OctoMAP process
     uint8_t ReqType = packet.data[2];
-    if(ReqType==MAPPING_REQ){
+
+    if (ReqType == MAPPING_REQ) {
         SplitAndAssembleMapping();
         processMappingPacket();
     }else if(ReqType == EXPLORE_RESP){
@@ -181,37 +193,14 @@ void ReceiveAndGive(void)
     }
 }
 
-bool ProcessAndSend(){
-    bool flag = false;
-    // static RespInfo_t RespInfo = GetRespInfo();
-    static CPXPacket_t GAPTxSTM;
-    cpxInitRoute(CPX_T_GAP8, CPX_T_STM32, CPX_F_APP, &GAPTxSTM.route);
-    memcpy(&GAPTxSTM.data, &RespInfo, sizeof(RespInfo_t));
-    GAPTxSTM.dataLength = sizeof(RespInfo_t);
-    cpxSendPacketBlocking(&GAPTxSTM);
-    cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]: Send to STM32, Destination = %d, Seq = %d \n\n", RespInfo.destinationId, RespInfo.seq);
-    flag=true;
-    return flag;
-}
-
-void GAP8SendTask(void)
-{
-    while(1){     
-        bool flag = ProcessAndSend();
-        cpxPrintToConsole(LOG_TO_CRTP, "flag = %d\n", flag);
-        pi_time_wait_us(1000*100);
-    }
-}
-
 void InitTask(void){
-    for(int i=0;i<UAVS_LIDAR_NUM;++i){
+    for(int i = 0; i < UAVS_LIDAR_NUM; ++i){
         UAVInit(&uavs[i]);
     }
     mapInit();
-    while(1){
+    while(1) {
         ReceiveAndGive();
-        ProcessAndSend();
-        pi_time_wait_us(1000 * 1000);
+        pi_time_wait_us(100 * 1000);
     }
 }
 
