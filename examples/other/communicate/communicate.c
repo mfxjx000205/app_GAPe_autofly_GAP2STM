@@ -132,7 +132,7 @@ void ReceiveAndGive(void)
     static uint16_t Loss_UAV_1 = 0;
     static uint16_t Loss_UAV_2 = 0;
     static uint16_t Loss_UAV_3 = 0;
-    cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Listening...\n");
+    //cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Listening...\n");
     cpxReceivePacketBlocking(CPX_F_APP, &packet);
     
     // Packet Loss Rate Calculate Module
