@@ -66,7 +66,7 @@ void processMappingPacket(){
                 , mapping_req_packet.mappingRequestPayload[i].mergedNums
                 , uav_id);
     }
-    cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Process mapping packet successfully\n");
+    // cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Process mapping packet successfully\n");
 }
 
 void processExplorePacket(){
@@ -107,7 +107,6 @@ void processExplorePacket(){
         RespInfo.seq = explore_req_packet.seq;
         RespInfo.reqType = EXPLORE_RESP;
         RespInfo.exploreResponsePayload.endPoint = nextpoint;
-        cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Uav%d has next point\n", uav_id);
 
         // Send response packet
         static CPXPacket_t GAPTxSTM;
@@ -115,13 +114,7 @@ void processExplorePacket(){
         memcpy(&GAPTxSTM.data, &RespInfo, sizeof(RespInfo_t));
         GAPTxSTM.dataLength = sizeof(RespInfo_t);
         cpxSendPacketBlocking(&GAPTxSTM);
-        // print GAPTxSTM data
-        cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]GAPTxSTM.data[0] = %d\n", GAPTxSTM.data[0]);
-        cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]GAPTxSTM.data[1] = %d\n", GAPTxSTM.data[1]);
-        cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]GAPTxSTM.data[2] = %d\n", GAPTxSTM.data[2]);
-        cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]GAPTxSTM.data[3] = %d\n", GAPTxSTM.data[3]);
-
-        cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Send explore response packet, destinationId = %d, seq = %d\n\n", RespInfo.destinationId, RespInfo.seq);
+        // cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Send explore response packet, destinationId = %d, seq = %d\n\n", RespInfo.destinationId, RespInfo.seq);
     }
     else{
         cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Uav%d doesn't have next point\n\n",uav_id);
@@ -149,7 +142,6 @@ void ReceiveAndGive(void)
     static uint16_t Loss_UAV_1 = 0;
     static uint16_t Loss_UAV_2 = 0;
     static uint16_t Loss_UAV_3 = 0;
-    //cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Listening...\n");
     cpxReceivePacketBlocking(CPX_F_APP, &packet);
     
     // Packet Loss Rate Calculate Module
