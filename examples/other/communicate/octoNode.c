@@ -138,13 +138,16 @@ coordinate_t calOrigin(uint8_t index, coordinate_t origin, uint16_t width)
  * @param width width of this node --- int
  * @param maxDepth maximum depth this node can be branched --- int
  */
-void octoNodeUpdate(octoNode_t *octoNode, octoMap_t *octoMap, coordinate_t *point, uint8_t diffLogOdds, coordinate_t origin, uint16_t width, uint8_t maxDepth)
+void octoNodeUpdate(octoNode_t *octoNode, octoMap_t *octoMap, coordinate_t *point, uint8_t diffLogOdds, coordinate_t origin, uint16_t width, uint8_t maxDepth, uint8_t merge_num, uint8_t uav_id)
 {
-    // octoNode->origin = origin;
+    octoNode->origin = origin;
+    octoNode->width = width;
     if (maxDepth == 0)
     {
-        octoNodeUpdateLogOdds(octoMap, octoNode, diffLogOdds);
+        for(int k = 0; k< merge_num ; ++k)
+            octoNodeUpdateLogOdds(octoMap, octoNode, diffLogOdds);
         octoNode->isLeaf = TRUE;
+        octoNode->uav_id = uav_id;
         return;
     }
     else
@@ -165,7 +168,7 @@ void octoNodeUpdate(octoNode_t *octoNode, octoMap_t *octoMap, coordinate_t *poin
         // update child
         uint8_t index = octoNodeIndex(point, origin, width);
         coordinate_t newOrigin = calOrigin(index, origin, width);
-        octoNodeUpdate(&octoMap->octoNodeSet->setData[octoNode->children].data[index], octoMap, point, diffLogOdds, newOrigin, width / 2, maxDepth - 1);
+        octoNodeUpdate(&octoMap->octoNodeSet->setData[octoNode->children].data[index], octoMap, point, diffLogOdds, newOrigin, width / 2, maxDepth - 1, merge_num, uav_id);
 
         // check whether to prune
         if (octoNode->isLeaf == FALSE && octoNodeCheckChildrenLogOdds(octoNode, octoMap))

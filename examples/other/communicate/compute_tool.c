@@ -150,6 +150,6 @@ bool GetNextPoint(CoordinateQueue_t* paths, coordinate_t* next_point){
     }
 }
 
-void UpdateMap(octoMap_t* octoMap, coordinate_t* current_I, coordinate_t* end_point){
-    octoTreeRayCasting(octoMap->octoTree, octoMap, current_I, end_point); 
+void UpdateMap(octoMap_t* octoMap, coordinate_t* current_I, coordinate_t* end_point, uint8_t merge_num, uint8_t uav_id){
+    octoTreeRayCasting(octoMap->octoTree, octoMap, current_I, end_point, merge_num, uav_id); 
 }

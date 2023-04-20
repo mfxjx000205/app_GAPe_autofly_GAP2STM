@@ -19,4 +19,4 @@ bool CalBestCandinates(octoMap_t *octoMap,example_measure_t *measurement, coordi
 rangeDirection_t GetRandomDir(example_measure_t *measurement);
 void JumpLocalOp(coordinateF_t *current_point, example_measure_t* measurement,CoordinateQueue_t* paths);
 bool GetNextPoint(CoordinateQueue_t* paths, coordinate_t* next_point);
-void UpdateMap(octoMap_t* octoMap, coordinate_t* current_I, coordinate_t* end_point);
+void UpdateMap(octoMap_t* octoMap, coordinate_t* current_I, coordinate_t* end_point, uint8_t merge_num, uint8_t uav_id);

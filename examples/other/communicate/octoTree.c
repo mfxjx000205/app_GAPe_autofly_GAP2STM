@@ -39,8 +39,8 @@ octoTree_t *octoTreeInit() {
  * @param point the coordinate of the observation lidar point --- (x,y,z): tuple
  * @param diffLogOdds the difference value of logodds, 0: free, 1: occupied
  */
-void octoTreeInsertPoint(octoTree_t *octoTree, octoMap_t *octoMap, coordinate_t *point, uint8_t diffLogOdds) {
-    octoNodeUpdate(octoTree->root, octoMap, point, diffLogOdds, octoTree->origin, octoTree->width, octoTree->maxDepth);
+void octoTreeInsertPoint(octoTree_t *octoTree, octoMap_t *octoMap, coordinate_t *point, uint8_t diffLogOdds, uint8_t merge_num, uint8_t uav_id) {
+    octoNodeUpdate(octoTree->root, octoMap, point, diffLogOdds, octoTree->origin, octoTree->width, octoTree->maxDepth, merge_num, uav_id);
 }
 
 /**
@@ -51,11 +51,11 @@ void octoTreeInsertPoint(octoTree_t *octoTree, octoMap_t *octoMap, coordinate_t 
  * @param endPoint the coordinate of the observation point  --- (x,y,z): tuple
  * @param diffLogOdds the difference value of logodds, 0: free, 1: occupied
  */
-void octoTreeRayCasting(octoTree_t *octoTree, octoMap_t *octoMap, coordinate_t *startPoint, coordinate_t *endPoint) {
+void octoTreeRayCasting(octoTree_t *octoTree, octoMap_t *octoMap, coordinate_t *startPoint, coordinate_t *endPoint, uint8_t merge_num, uint8_t uav_id) {
     // Insert occupancy voxel
-    octoTreeInsertPoint(octoTree, octoMap, endPoint, LOG_ODDS_OCCUPIED_FLAG);
+    octoTreeInsertPoint(octoTree, octoMap, endPoint, LOG_ODDS_OCCUPIED_FLAG, merge_num, uav_id);
     // call bresenham algorithm to insert free voxel
-    bresenham3D(octoTree, octoMap, startPoint, endPoint);
+    bresenham3D(octoTree, octoMap, startPoint, endPoint, merge_num, uav_id);
 }
 
 /**
@@ -77,7 +77,7 @@ uint8_t octoTreeGetLogProbability(octoTree_t *octoTree, octoMap_t *octoMap, coor
  * @param start start point of the ray
  * @param end end point of the ray
  */
-void bresenham3D(octoTree_t *octoTree, octoMap_t *octoMap, coordinate_t *start, coordinate_t *end)
+void bresenham3D(octoTree_t *octoTree, octoMap_t *octoMap, coordinate_t *start, coordinate_t *end, uint8_t merge_num, uint8_t uav_id)
 {
     coordinate_t item_start = {start->x,start->y,start->z};
     coordinate_t item_end = {end->x,end->y,end->z};
@@ -138,7 +138,7 @@ void bresenham3D(octoTree_t *octoTree, octoMap_t *octoMap, coordinate_t *start, 
             z += stepZ;
             errorXZ += deltaX;
         }
-        octoTreeInsertPoint(octoTree, octoMap, point, LOG_ODDS_FREE_FLAG);
+        octoTreeInsertPoint(octoTree, octoMap, point, LOG_ODDS_FREE_FLAG, merge_num, uav_id);
         x += stepX;
     }
 }

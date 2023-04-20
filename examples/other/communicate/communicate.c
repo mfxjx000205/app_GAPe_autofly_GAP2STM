@@ -57,11 +57,14 @@ void mapInit()
 }
 
 void processMappingPacket(){
-    short uav_id = mapping_req_packet.sourceId;
+    uint8_t uav_id = mapping_req_packet.sourceId;
     short len = mapping_req_packet.mappingRequestPayloadLength;
     for (short i = 0; i < len; i++)
     {
-        UpdateMap(&octoMapData,&mapping_req_packet.mappingRequestPayload[i].startPoint, &mapping_req_packet.mappingRequestPayload[i].endPoint);
+        UpdateMap(&octoMapData,&mapping_req_packet.mappingRequestPayload[i].startPoint
+                , &mapping_req_packet.mappingRequestPayload[i].endPoint
+                , mapping_req_packet.mappingRequestPayload[i].mergedNums
+                , uav_id);
     }
 }
 
