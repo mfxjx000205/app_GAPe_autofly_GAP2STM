@@ -6,7 +6,7 @@
 #include "octoTree.h"
 #include "communicate.h"
 #define GAP8Edge 0x3F
-#define AIDECK_ID 0x00
+#define AIDECK_ID 0x7E
 #define UAVS_LIDAR_NUM 3
 
 static CPXPacket_t packet;
@@ -132,52 +132,52 @@ void ReceiveAndGive(void)
     static uint16_t Loss_UAV_1 = 0;
     static uint16_t Loss_UAV_2 = 0;
     static uint16_t Loss_UAV_3 = 0;
-    while (1)
+    cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Listening...\n");
+    cpxReceivePacketBlocking(CPX_F_APP, &packet);
+    
+    // Packet Loss Rate Calculate Module
+    TotalPacketCount++;
+    if(TotalPacketCount % 100==0){
+        cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Packet Loss Total: The GAP8 has processed %d Packet!\n\n", TotalPacketCount);
+    }
+    uint8_t sourceId = packet.data[0];
+    switch (sourceId)
     {
-        cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Listening...\n");
-        cpxReceivePacketBlocking(CPX_F_APP, &packet);
-        
-        // Packet Loss Rate Calculate Module
-        TotalPacketCount++;
-        if(TotalPacketCount % 10==0){
-            cpxPrintToConsole(LOG_TO_CRTP, "\n[GAP8-Edge]Packet Loss Total: The GAP8 has processed %d Packet!\n\n", TotalPacketCount);
+    case 0x00:
+        Loss_UAV_1++;
+        if(TotalPacketCount % 50==0){
+            cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Packet Loss UAV1: The GAP8 has processed %d Packet!\n\n", Loss_UAV_1);
+            Loss_UAV_1 = 0;
         }
-        uint8_t sourceId = packet.data[0];
-        switch (sourceId)
-        {
-        case 0x01:
-            Loss_UAV_1++;
-            if(TotalPacketCount % 50==0){
-                cpxPrintToConsole(LOG_TO_CRTP, "\n[GAP8-Edge]Packet Loss UAV1: The GAP8 has processed %d Packet!\n\n", Loss_UAV_1);
-                Loss_UAV_1 = 0;
-            }
-            break;
-        case 0x02:
-            Loss_UAV_2++;
-            if(TotalPacketCount % 50==0){
-                cpxPrintToConsole(LOG_TO_CRTP, "\n[GAP8-Edge]Packet Loss UAV2: The GAP8 has processed %d Packet!\n\n", Loss_UAV_2);
-                Loss_UAV_2 = 0;
-            }
-            break;
-        
-        case 0x03:
-            Loss_UAV_3++;
-            if(TotalPacketCount % 50==0){
-                cpxPrintToConsole(LOG_TO_CRTP, "\n[GAP8-Edge]Packet Loss UAV3: The GAP8 has processed %d Packet!\n\n", Loss_UAV_3);
-                Loss_UAV_3 = 0;
-            }
-            break;
+        break;
+    case 0x01:
+        Loss_UAV_2++;
+        if(TotalPacketCount % 50==0){
+            cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Packet Loss UAV2: The GAP8 has processed %d Packet!\n\n", Loss_UAV_2);
+            Loss_UAV_2 = 0;
         }
+        break;
+    
+    case 0x02:
+        Loss_UAV_3++;
+        if(TotalPacketCount % 50==0){
+            cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-Edge]Packet Loss UAV3: The GAP8 has processed %d Packet!\n\n", Loss_UAV_3);
+            Loss_UAV_3 = 0;
+        }
+        break;
+    default:
+        cpxPrintToConsole("[GAP8-Edge]NO match ID!\n\n");
+        break;
+    }
 
-        //Split and Assemble the packet to OctoMAP process
-        uint8_t ReqType = packet.data[2];
-        if(ReqType==MAPPING_REQ){
-            SplitAndAssembleMapping();
-            processMappingPacket();
-        }else{
-            SplitAndAssembleExplore();
-            processExplorePacket();
-        }
+    //Split and Assemble the packet to OctoMAP process
+    uint8_t ReqType = packet.data[2];
+    if(ReqType==MAPPING_REQ){
+        SplitAndAssembleMapping();
+        processMappingPacket();
+    }else{
+        SplitAndAssembleExplore();
+        processExplorePacket();
     }
 }
 
