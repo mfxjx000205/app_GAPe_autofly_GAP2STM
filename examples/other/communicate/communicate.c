@@ -166,7 +166,7 @@ void ReceiveAndGive(void)
         }
         break;
     default:
-        cpxPrintToConsole("[GAP8-Edge]NO match ID!\n\n");
+        cpxPrintToConsole(LOG_TO_CRTP,"[GAP8-Edge]NO match ID!\n\n");
         break;
     }
 
@@ -175,7 +175,7 @@ void ReceiveAndGive(void)
     if(ReqType==MAPPING_REQ){
         SplitAndAssembleMapping();
         processMappingPacket();
-    }else{
+    }else if(ReqType == EXPLORE_RESP){
         SplitAndAssembleExplore();
         processExplorePacket();
     }
