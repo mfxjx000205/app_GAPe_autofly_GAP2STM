@@ -126,7 +126,7 @@ void JumpLocalOp(coordinateF_t *current_point, example_measure_t* measurement,Co
         return;
     }
     // rangeDirection_t dir = Myrand()%6;
-    float length = measurement->data[dir];
+    float length = Myfmin(measurement->data[dir],SENSOR_TH);
     coordinateF_t item_start_point = {current_point->x,current_point->y,current_point->z};
     coordinateF_t item_end_point;
     while(length > STRIDE + AVOID_DISTANCE){
