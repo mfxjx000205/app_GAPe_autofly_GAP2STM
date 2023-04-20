@@ -115,6 +115,12 @@ void processExplorePacket(){
         memcpy(&GAPTxSTM.data, &RespInfo, sizeof(RespInfo_t));
         GAPTxSTM.dataLength = sizeof(RespInfo_t);
         cpxSendPacketBlocking(&GAPTxSTM);
+        // print GAPTxSTM data
+        cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]GAPTxSTM.data[0] = %d\n", GAPTxSTM.data[0]);
+        cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]GAPTxSTM.data[1] = %d\n", GAPTxSTM.data[1]);
+        cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]GAPTxSTM.data[2] = %d\n", GAPTxSTM.data[2]);
+        cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]GAPTxSTM.data[3] = %d\n", GAPTxSTM.data[3]);
+
         cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Send explore response packet, destinationId = %d, seq = %d\n\n", RespInfo.destinationId, RespInfo.seq);
     }
     else{
