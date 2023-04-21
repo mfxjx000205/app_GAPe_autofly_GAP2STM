@@ -44,14 +44,14 @@ void mapInit()
     octoMapInit(octoMap);
 
     // print octoMap
-    cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]sizeof(octoNode) = %lu\n", sizeof(octoNode_t));
-    cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]octoTree->center = (%d, %d, %d), origin = (%d, %d, %d), resolution = %d, maxDepth = %d, width = %d\n", 
+    cpxPrintToConsole(LOG_TO_CRTP, "[E1dge-GAP8]sizeof(octoNode) = %lu\n", sizeof(octoNode_t));
+    cpxPrintToConsole(LOG_TO_CRTP, "[E2dge-GAP8]octoTree->center = (%d, %d, %d), origin = (%d, %d, %d), resolution = %d, maxDepth = %d, width = %d\n", 
         octoMap->octoTree->center.x, octoMap->octoTree->center.y, octoMap->octoTree->center.z, 
         octoMap->octoTree->origin.x, octoMap->octoTree->origin.y, octoMap->octoTree->origin.z,
         octoMap->octoTree->resolution, octoMap->octoTree->maxDepth, octoMap->octoTree->width);
-    cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]root->children = %d, logOdds = %d, isLeaf = %d\n", 
+    cpxPrintToConsole(LOG_TO_CRTP, "[E3dge-GAP8]root->children = %d, logOdds = %d, isLeaf = %d\n", 
         octoMap->octoTree->root->children, octoMap->octoTree->root->logOdds, octoMap->octoTree->root->isLeaf);
-    cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]octoNodeSet->freeQE = %d, fullQE = %d, length = %d, numFree = %d, numOccupied = %d\n", 
+    cpxPrintToConsole(LOG_TO_CRTP, "[E4dge-GAP8]octoNodeSet->freeQE = %d, fullQE = %d, length = %d, numFree = %d, numOccupied = %d\n", 
         octoMap->octoNodeSet->freeQueueEntry, octoMap->octoNodeSet->fullQueueEntry, 
         octoMap->octoNodeSet->length, octoMap->octoNodeSet->numFree, octoMap->octoNodeSet->numOccupied);
 }
@@ -72,7 +72,7 @@ void processMappingPacket(){
 void processExplorePacket(){
     short uav_id = explore_req_packet.sourceId;
     if(uav_id >= UAVS_LIDAR_NUM){
-        cpxPrintToConsole(LOG_TO_CRTP, "UavID error!\n");
+        // cpxPrintToConsole(LOG_TO_CRTP, "UavID error!\n");
         return;
     }
     // Calculate new waypoint
@@ -118,7 +118,7 @@ void processExplorePacket(){
         // cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Send explore response packet, destinationId = %d, seq = %d\n\n", RespInfo.destinationId, RespInfo.seq);
     }
     else{
-        cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Uav%d doesn't have next point\n\n",uav_id);
+        // cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Uav%d doesn't have next point\n\n",uav_id);
         return;
     }
 }
@@ -126,14 +126,14 @@ void processExplorePacket(){
 
 void SplitAndAssembleMapping(){
     memcpy(&mapping_req_packet, packet.data, sizeof(mapping_req_packet_t));
-    cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]CPX: Receive mapping request from: %d, seq: %d, payloadLength: %d\n", 
-        mapping_req_packet.sourceId, mapping_req_packet.seq, mapping_req_packet.mappingRequestPayloadLength);
+    // cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]CPX: Receive mapping request from: %d, seq: %d, payloadLength: %d\n", 
+    //     mapping_req_packet.sourceId, mapping_req_packet.seq, mapping_req_packet.mappingRequestPayloadLength);
 }
 
 void SplitAndAssembleExplore(){
     memcpy(&explore_req_packet, packet.data, sizeof(explore_req_packet_t));
-    cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]CPX: Receive explore request from: %d, seq: %d\n", 
-        explore_req_packet.sourceId, explore_req_packet.seq);
+    // cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]CPX: Receive explore request from: %d, seq: %d\n", 
+    //     explore_req_packet.sourceId, explore_req_packet.seq);
 }
 
 void ReceiveAndGive(void)
@@ -148,7 +148,7 @@ void ReceiveAndGive(void)
     // Packet Loss Rate Calculate Module
     TotalPacketCount++;
     if(TotalPacketCount % 100==0){
-        cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Packet Loss Total: The GAP8 has processed %d Packet!\n\n", TotalPacketCount);
+        // cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Packet Loss Total: The GAP8 has processed %d Packet!\n\n", TotalPacketCount);
     }
     uint8_t sourceId = packet.data[0];
     switch (sourceId)
@@ -156,14 +156,14 @@ void ReceiveAndGive(void)
     case 0x00:
         Loss_UAV_1++;
         if(TotalPacketCount % 50==0){
-            cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Packet Loss UAV1: The GAP8 has processed %d Packet!\n\n", Loss_UAV_1);
+            // cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Packet Loss UAV1: The GAP8 has processed %d Packet!\n\n", Loss_UAV_1);
             Loss_UAV_1 = 0;
         }
         break;
     case 0x01:
         Loss_UAV_2++;
         if(TotalPacketCount % 50==0){
-            cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Packet Loss UAV2: The GAP8 has processed %d Packet!\n\n", Loss_UAV_2);
+            // cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Packet Loss UAV2: The GAP8 has processed %d Packet!\n\n", Loss_UAV_2);
             Loss_UAV_2 = 0;
         }
         break;
@@ -171,12 +171,12 @@ void ReceiveAndGive(void)
     case 0x02:
         Loss_UAV_3++;
         if(TotalPacketCount % 50==0){
-            cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Packet Loss UAV3: The GAP8 has processed %d Packet!\n\n", Loss_UAV_3);
+            // cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Packet Loss UAV3: The GAP8 has processed %d Packet!\n\n", Loss_UAV_3);
             Loss_UAV_3 = 0;
         }
         break;
     default:
-        cpxPrintToConsole(LOG_TO_CRTP,"[Edge-GAP8]NO match sourceID!\n\n");
+        // cpxPrintToConsole(LOG_TO_CRTP,"[Edge-GAP8]NO match sourceID!\n\n");
         break;
     }
 
