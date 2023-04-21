@@ -114,6 +114,7 @@ void processExplorePacket(){
         memcpy(&GAPTxSTM.data, &RespInfo, sizeof(RespInfo_t));
         GAPTxSTM.dataLength = sizeof(RespInfo_t);
         cpxSendPacketBlocking(&GAPTxSTM);
+        pi_time_wait_us(10 * 1000);
         // cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Send explore response packet, destinationId = %d, seq = %d\n\n", RespInfo.destinationId, RespInfo.seq);
     }
     else{
