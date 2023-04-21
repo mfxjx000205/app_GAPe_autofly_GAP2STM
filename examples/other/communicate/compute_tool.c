@@ -88,6 +88,7 @@ bool CalBestCandinates(octoMap_t *octoMap,example_measure_t *measurement, coordi
         uav->direction_weight[dir_next] = DIRECTION_AWARD;
         uav->direction_weight[(uav->lastdir)] = 1;
         (uav->lastdir) = dir_next;
+        cpxPrintToConsole(LOG_TO_CRTP,"push_coordinate :candinates[%d] = (%f,%f,%f)]",dir_next,candinates[dir_next].x,candinates[dir_next].y,candinates[dir_next].z);
         push_CoordinateQueue(&uav->paths, candinates[dir_next]);
         return true;
     }
@@ -131,6 +132,7 @@ void JumpLocalOp(coordinateF_t *current_point, example_measure_t* measurement,Co
     coordinateF_t item_end_point;
     while(length > STRIDE + AVOID_DISTANCE){
         cal_PointByLength(STRIDE, -1 * measurement->pitch, measurement->roll, measurement->yaw, &item_start_point, dir, &item_end_point);
+        cpxPrintToConsole(LOG_TO_CRTP,"jumpLocalOp point:(%.2f,%.2f,%.2f)\n",item_end_point.x,item_end_point.y,item_end_point.z);
         push_CoordinateQueue(paths, item_end_point);
         item_start_point = item_end_point;
         length -= STRIDE;
@@ -143,9 +145,10 @@ bool GetNextPoint(CoordinateQueue_t* paths, coordinate_t* next_point){
     }
     else{
         coordinateF_t item_point = pop_CoordinateQueue(paths);
-        next_point->x = item_point.x;
-        next_point->y = item_point.y;
-        next_point->z = item_point.z;
+        next_point->x = (int)item_point.x;
+        next_point->y = (int)item_point.y;
+        next_point->z = (int)item_point.z;
+        cpxPrintToConsole(LOG_TO_CRTP,"GetNextPoint: item:(%.2f,%.2f,%.2f),next:(%d,%d,%d)\n",item_point.x,item_point.y,item_point.z,next_point->x,next_point->y,next_point->z);
         return true;
     }
 }
