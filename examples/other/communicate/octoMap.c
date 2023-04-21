@@ -20,7 +20,7 @@ void octoMapInit(octoMap_t *octoMap)
     cpxPrintToConsole(LOG_TO_CRTP,"octoMapInit\n");
     // octoNodeSet_t* nodeSet;
     // print nodeSet size
-    cpxPrintToConsole(LOG_TO_CRTP,"sizeof(octoNodeSet_t) = %d\n", sizeof(octoNodeSet_t));
+    // cpxPrintToConsole(LOG_TO_CRTP,"sizeof(octoNodeSet_t) = %d\n", sizeof(octoNodeSet_t));
     octoNodeSetInit(&nodeSet);
 
     // init octoMap
@@ -30,21 +30,21 @@ void octoMapInit(octoMap_t *octoMap)
     octoMap->octoTree->root->children = octoNodeSetMalloc(octoMap->octoNodeSet);
 
     // print octoMap
-    cpxPrintToConsole(LOG_TO_CRTP,"octoMap.octoTree->center = (%d, %d, %d)\n", octoMap->octoTree->center.x, octoMap->octoTree->center.y, octoMap->octoTree->center.z);
-    cpxPrintToConsole(LOG_TO_CRTP,"octoMap.octoTree->origin = (%d, %d, %d)\n", octoMap->octoTree->origin.x, octoMap->octoTree->origin.y, octoMap->octoTree->origin.z);
-    cpxPrintToConsole(LOG_TO_CRTP,"octoMap.octoTree->resolution = %d\n", octoMap->octoTree->resolution);
-    cpxPrintToConsole(LOG_TO_CRTP,"octoMap.octoTree->maxDepth = %d\n", octoMap->octoTree->maxDepth);
-    cpxPrintToConsole(LOG_TO_CRTP,"octoMap.octoTree->width = %d\n", octoMap->octoTree->width);
+    // cpxPrintToConsole(LOG_TO_CRTP,"octoMap.octoTree->center = (%d, %d, %d)\n", octoMap->octoTree->center.x, octoMap->octoTree->center.y, octoMap->octoTree->center.z);
+    // cpxPrintToConsole(LOG_TO_CRTP,"octoMap.octoTree->origin = (%d, %d, %d)\n", octoMap->octoTree->origin.x, octoMap->octoTree->origin.y, octoMap->octoTree->origin.z);
+    // cpxPrintToConsole(LOG_TO_CRTP,"octoMap.octoTree->resolution = %d\n", octoMap->octoTree->resolution);
+    // cpxPrintToConsole(LOG_TO_CRTP,"octoMap.octoTree->maxDepth = %d\n", octoMap->octoTree->maxDepth);
+    // cpxPrintToConsole(LOG_TO_CRTP,"octoMap.octoTree->width = %d\n", octoMap->octoTree->width);
     // print octoMap.octoTree->root
-    cpxPrintToConsole(LOG_TO_CRTP,"octoMap.octoTree->root->children = %d\n", octoMap->octoTree->root->children);
-    cpxPrintToConsole(LOG_TO_CRTP,"octoMap.octoTree->root->logOdds = %d\n", octoMap->octoTree->root->logOdds);
-    cpxPrintToConsole(LOG_TO_CRTP,"octoMap.octoTree->root->isLeaf = %d\n", octoMap->octoTree->root->isLeaf);
+    // cpxPrintToConsole(LOG_TO_CRTP,"octoMap.octoTree->root->children = %d\n", octoMap->octoTree->root->children);
+    // cpxPrintToConsole(LOG_TO_CRTP,"octoMap.octoTree->root->logOdds = %d\n", octoMap->octoTree->root->logOdds);
+    // cpxPrintToConsole(LOG_TO_CRTP,"octoMap.octoTree->root->isLeaf = %d\n", octoMap->octoTree->root->isLeaf);
     // print octoMap.octoNodeSet
-    cpxPrintToConsole(LOG_TO_CRTP,"octoMap.octoNodeSet->freeQueueEntry = %d, octoMap.octoNodeSet->fullQueueEntry = %d\n\n", octoMap->octoNodeSet->freeQueueEntry, octoMap->octoNodeSet->fullQueueEntry);
+    // cpxPrintToConsole(LOG_TO_CRTP,"octoMap.octoNodeSet->freeQueueEntry = %d, octoMap.octoNodeSet->fullQueueEntry = %d\n\n", octoMap->octoNodeSet->freeQueueEntry, octoMap->octoNodeSet->fullQueueEntry);
     //print the length and numFree and numOccupied
-    cpxPrintToConsole(LOG_TO_CRTP,"octoMap.octoNodeSet->length = %d, octoMap.octoNodeSet->numFree = %d, octoMap.octoNodeSet->numOccupied = %d\n\n", octoMap->octoNodeSet->length, octoMap->octoNodeSet->numFree, octoMap->octoNodeSet->numOccupied);
+    // cpxPrintToConsole(LOG_TO_CRTP,"octoMap.octoNodeSet->length = %d, octoMap.octoNodeSet->numFree = %d, octoMap.octoNodeSet->numOccupied = %d\n\n", octoMap->octoNodeSet->length, octoMap->octoNodeSet->numFree, octoMap->octoNodeSet->numOccupied);
     count = 0;
-    cpxPrintToConsole(LOG_TO_CRTP,"octoMap.octoNodeSet->volumeFree = %d, octoMap.octoNodeSet->volumeOccupied = %d\n\n", octoMap->octoNodeSet->volumeFree, octoMap->octoNodeSet->volumeOccupied);
+    // cpxPrintToConsole(LOG_TO_CRTP,"octoMap.octoNodeSet->volumeFree = %d, octoMap.octoNodeSet->volumeOccupied = %d\n\n", octoMap->octoNodeSet->volumeFree, octoMap->octoNodeSet->volumeOccupied);
 }
 
 void recursiveExportOctoMap(octoMap_t* octoMap, octoNode_t* node, coordinate_t origin, uint16_t width) {

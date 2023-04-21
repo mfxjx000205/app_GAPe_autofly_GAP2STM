@@ -5,7 +5,7 @@
 #include "cpx.h"
 void octoNodeSetInit(octoNodeSet_t *nodeSet)
 {
-    cpxPrintToConsole(LOG_TO_CRTP,"octoNodeSetInit\n");
+    // cpxPrintToConsole(LOG_TO_CRTP, "octoNodeSetInit\n");
     setIndex_t i;
     nodeSet->freeQueueEntry = 0;
     nodeSet->fullQueueEntry = -1;
