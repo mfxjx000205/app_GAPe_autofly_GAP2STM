@@ -110,6 +110,9 @@ void processExplorePacket(){
     else
     {
         initCoordinateQueue(&uavs[uav_id].paths);
+        initQueue(&uavs[uav_id].queue);
+        for(int i = 0; i < WINDOW_SIZE; ++i)
+            uavs[uav_id].loops[i] = 0;
         JumpLocalOp(&currentF, &measurement, &uavs[uav_id].paths);
     }
     coordinate_t nextpoint;
