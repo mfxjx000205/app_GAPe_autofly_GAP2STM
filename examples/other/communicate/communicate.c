@@ -26,28 +26,29 @@ static bool UAV3finish=false;
 uav_t uavs[UAVS_LIDAR_NUM];
 
 void sendSumUpInfo(){
-    octoNodeSetItem_t* base= (&octoMapData)->octoNodeSet->setData;
-    octoNodeSetItem_t* cur=base+(&octoMapData)->octoNodeSet->fullQueueEntry;
+    octoNodeSetItem_t* base = (&octoMapData)->octoNodeSet->setData;
+    octoNodeSetItem_t* cur = base+(&octoMapData)->octoNodeSet->fullQueueEntry;
     u_int8_t nodesCount=0;
-    while(cur->next!=-1){
-        nodesCount++;
-        cpxPrintToConsole(LOG_TO_CRTP, "[SumUp-Info]: Seq = %d, \t(%d,%d,%d)@%d (%d,%d,%d)@%d (%d,%d,%d)@%d (%d,%d,%d)@%d\n", nodesCount,cur->data[0].origin.x,cur->data[0].origin.y,cur->data[0].origin.z,cur->data[0].width
-                                                        ,cur->data[1].origin.x,cur->data[1].origin.y,cur->data[1].origin.z,cur->data[1].width
-                                                        ,cur->data[2].origin.x,cur->data[2].origin.y,cur->data[2].origin.z,cur->data[2].width
-                                                        ,cur->data[3].origin.x,cur->data[3].origin.y,cur->data[3].origin.z,cur->data[3].width);
 
+    while(cur->next != -1){
+        nodesCount++;
+        cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]Seq = %d, \t(%d,%d,%d)@%d (%d,%d,%d)@%d (%d,%d,%d)@%d (%d,%d,%d)@%d\n", 
+            nodesCount,cur->data[0].origin.x,cur->data[0].origin.y,cur->data[0].origin.z,cur->data[0].width,
+            cur->data[1].origin.x,cur->data[1].origin.y,cur->data[1].origin.z,cur->data[1].width,
+            cur->data[2].origin.x,cur->data[2].origin.y,cur->data[2].origin.z,cur->data[2].width,
+            cur->data[3].origin.x,cur->data[3].origin.y,cur->data[3].origin.z,cur->data[3].width);
         pi_time_wait_us(1000 * 1000);
-        cpxPrintToConsole(LOG_TO_CRTP, "[SumUp-Info]: Seq = %d.5, \t(%d,%d,%d)@%d (%d,%d,%d)@%d (%d,%d,%d)@%d (%d,%d,%d)@%d\n\n", nodesCount,cur->data[4].origin.x,cur->data[4].origin.y,cur->data[4].origin.z,cur->data[4].width
-                ,cur->data[5].origin.x,cur->data[5].origin.y,cur->data[5].origin.z,cur->data[5].width
-                ,cur->data[6].origin.x,cur->data[6].origin.y,cur->data[6].origin.z,cur->data[6].width
-                ,cur->data[7].origin.x,cur->data[7].origin.y,cur->data[7].origin.z,cur->data[7].width);
-        cur=base+cur->next;
+
+        cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]Seq = %d.5, \t(%d,%d,%d)@%d (%d,%d,%d)@%d (%d,%d,%d)@%d (%d,%d,%d)@%d\n", 
+            nodesCount,cur->data[4].origin.x,cur->data[4].origin.y,cur->data[4].origin.z,cur->data[4].width,
+            cur->data[5].origin.x,cur->data[5].origin.y,cur->data[5].origin.z,cur->data[5].width,
+            cur->data[6].origin.x,cur->data[6].origin.y,cur->data[6].origin.z,cur->data[6].width,
+            cur->data[7].origin.x,cur->data[7].origin.y,cur->data[7].origin.z,cur->data[7].width);
+        cur = base+cur->next;
         pi_time_wait_us(1000 * 1000);
     }
-    cpxPrintToConsole(LOG_TO_CRTP, "[SumUp-Info]: Finished!, totalPacketCount = %d,\n\n", nodesCount);
-    cpxPrintToConsole(LOG_TO_CRTP, "[SumUp-Info] ---------Packetloss---------");
-    cpxPrintToConsole(LOG_TO_CRTP, "UAV1:%d,UAV1:%d,UAV1:%d,total:%d",UAV1count,UAV2count,UAV3count,TotalPacketCount);
-
+    cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]Finished! TotalPacketCount = %d,\n", nodesCount);
+    cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]UAV1:%d, UAV2:%d, UAV3:%d, total:%d\n\n", UAV1count, UAV2count, UAV3count, TotalPacketCount);
 }
 
 void mapInit()
@@ -56,14 +57,14 @@ void mapInit()
     octoMapInit(octoMap);
 
     // print octoMap
-    cpxPrintToConsole(LOG_TO_CRTP, "[E1dge-GAP8]sizeof(octoNode) = %lu\n", sizeof(octoNode_t));
-    cpxPrintToConsole(LOG_TO_CRTP, "[E2dge-GAP8]octoTree->center = (%d, %d, %d), origin = (%d, %d, %d), resolution = %d, maxDepth = %d, width = %d\n", 
+    cpxPrintToConsole(LOG_TO_CRTP, "[MapInit]sizeof(octoNode) = %lu\n", sizeof(octoNode_t));
+    cpxPrintToConsole(LOG_TO_CRTP, "[MapInit]octoTree->center = (%d, %d, %d), origin = (%d, %d, %d), resolution = %d, maxDepth = %d, width = %d\n", 
         octoMap->octoTree->center.x, octoMap->octoTree->center.y, octoMap->octoTree->center.z, 
         octoMap->octoTree->origin.x, octoMap->octoTree->origin.y, octoMap->octoTree->origin.z,
         octoMap->octoTree->resolution, octoMap->octoTree->maxDepth, octoMap->octoTree->width);
-    cpxPrintToConsole(LOG_TO_CRTP, "[E3dge-GAP8]root->children = %d, logOdds = %d, isLeaf = %d\n", 
+    cpxPrintToConsole(LOG_TO_CRTP, "[MapInit]root->children = %d, logOdds = %d, isLeaf = %d\n", 
         octoMap->octoTree->root->children, octoMap->octoTree->root->logOdds, octoMap->octoTree->root->isLeaf);
-    cpxPrintToConsole(LOG_TO_CRTP, "[E4dge-GAP8]octoNodeSet->freeQE = %d, fullQE = %d, length = %d, numFree = %d, numOccupied = %d\n", 
+    cpxPrintToConsole(LOG_TO_CRTP, "[MapInit]octoNodeSet->freeQE = %d, fullQE = %d, length = %d, numFree = %d, numOccupied = %d\n", 
         octoMap->octoNodeSet->freeQueueEntry, octoMap->octoNodeSet->fullQueueEntry, 
         octoMap->octoNodeSet->length, octoMap->octoNodeSet->numFree, octoMap->octoNodeSet->numOccupied);
 }
@@ -210,18 +211,18 @@ void ReceiveAndGive(void)
         SplitAndAssembleExplore();
         processExplorePacket();
     }else{
-        cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-EDGE]ASSERT:Wrong process!\n");
+        cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-EDGE]ASSERT: Wrong process!\n");
     }
 }
 
 void InitTask(void){
-    for(int i = 0; i < UAVS_LIDAR_NUM; ++i){
+    for (int i = 0; i < UAVS_LIDAR_NUM; ++i) {
         UAVInit(&uavs[i]);
     }
     mapInit();
     while(1) {
         ReceiveAndGive();
-        if(UAV1finish ==true && UAV2finish ==true &&UAV3finish == true){
+        if (UAV1finish && UAV2finish && UAV3finish){
             sendSumUpInfo();
             break;
         }

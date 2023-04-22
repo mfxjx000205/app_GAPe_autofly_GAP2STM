@@ -88,12 +88,13 @@ bool CalBestCandinates(octoMap_t *octoMap,example_measure_t *measurement, coordi
         uav->direction_weight[dir_next] = DIRECTION_AWARD;
         uav->direction_weight[(uav->lastdir)] = 1;
         (uav->lastdir) = dir_next;
-        cpxPrintToConsole(LOG_TO_CRTP,"push_coordinate :candinates[%d] = (%f,%f,%f)]",dir_next,candinates[dir_next].x,candinates[dir_next].y,candinates[dir_next].z);
+        cpxPrintToConsole(LOG_TO_CRTP,"[CalNext]Push candinates[%d]: (%f,%f,%f)\n",
+            dir_next, candinates[dir_next].x, candinates[dir_next].y, candinates[dir_next].z);
         push_CoordinateQueue(&uav->paths, candinates[dir_next]);
         return true;
     }
     else{
-        cpxPrintToConsole(LOG_TO_CRTP,"no next point\n");
+        cpxPrintToConsole(LOG_TO_CRTP,"[CalNext]No next point\n");
         return false;
     }
 }
@@ -123,7 +124,7 @@ rangeDirection_t GetRandomDir(example_measure_t *measurement)
 void JumpLocalOp(coordinateF_t *current_point, example_measure_t* measurement,CoordinateQueue_t* paths){
     rangeDirection_t dir = GetRandomDir(measurement);
     if(dir == 10){
-        cpxPrintToConsole(LOG_TO_CRTP,"no next dir\n");
+        cpxPrintToConsole(LOG_TO_CRTP,"[JumpLocal]No next dir\n");
         return;
     }
     // rangeDirection_t dir = Myrand()%6;
@@ -132,7 +133,10 @@ void JumpLocalOp(coordinateF_t *current_point, example_measure_t* measurement,Co
     coordinateF_t item_end_point;
     while(length > STRIDE + AVOID_DISTANCE){
         cal_PointByLength(STRIDE, -1 * measurement->pitch, measurement->roll, measurement->yaw, &item_start_point, dir, &item_end_point);
-        cpxPrintToConsole(LOG_TO_CRTP,"jumpLocalOp point:(%.2f,%.2f,%.2f)\n",item_end_point.x,item_end_point.y,item_end_point.z);
+        cpxPrintToConsole(LOG_TO_CRTP,"[JumpLocal]Goto: (%.2f, %.2f, %.2f)\n\n",
+            item_end_point.x,
+            item_end_point.y,
+            item_end_point.z);
         push_CoordinateQueue(paths, item_end_point);
         item_start_point = item_end_point;
         length -= STRIDE;
@@ -148,7 +152,9 @@ bool GetNextPoint(CoordinateQueue_t* paths, coordinate_t* next_point){
         next_point->x = (int)item_point.x;
         next_point->y = (int)item_point.y;
         next_point->z = (int)item_point.z;
-        cpxPrintToConsole(LOG_TO_CRTP,"GetNextPoint: item:(%.2f,%.2f,%.2f),next:(%d,%d,%d)\n",item_point.x,item_point.y,item_point.z,next_point->x,next_point->y,next_point->z);
+        cpxPrintToConsole(LOG_TO_CRTP,"[GetNextPoint]item:(%.2f, %.2f, %.2f), next:(%d, %d, %d)\n",
+            item_point.x, item_point.y, item_point.z,
+            next_point->x, next_point->y, next_point->z);
         return true;
     }
 }
