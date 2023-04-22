@@ -7,6 +7,7 @@
 #include "communicate.h"
 #define GAP8Edge 0x3F
 #define AIDECK_ID 0x7E
+#define FINISH_NUM 0xFFFF
 #define UAVS_LIDAR_NUM 3
 
 static CPXPacket_t packet;
@@ -14,29 +15,40 @@ octoMap_t octoMapData;
 static mapping_req_packet_t mapping_req_packet;
 static explore_req_packet_t explore_req_packet;
 static RespInfo_t RespInfo;
+static uint16_t TotalPacketCount = 0;
+static uint16_t UAV1count=0;
+static uint16_t UAV2count=0;
+static uint16_t UAV3count=0;
+static bool UAV1finish=false;
+static bool UAV2finish=false;
+static bool UAV3finish=false;
+
 uav_t uavs[UAVS_LIDAR_NUM];
 
-// void sendSumUpInfo(){
-//     octoNodeSetItem_t* base= (&octoMapData)->octoNodeSet->setData;
-//     octoNodeSetItem_t* cur=base+(&octoMapData)->octoNodeSet->fullQueueEntry;
-//     u_int8_t nodesCount=0;
-//     while(cur->next!=-1){
-//         nodesCount++;
-//         cpxPrintToConsole(LOG_TO_CRTP, "[SumUp-Info]: Seq = %d, \t(%d,%d,%d)@%d (%d,%d,%d)@%d (%d,%d,%d)@%d (%d,%d,%d)@%d\n", nodesCount,cur->data[0].origin.x,cur->data[0].origin.y,cur->data[0].origin.z,cur->data[0].width
-//                                                         ,cur->data[1].origin.x,cur->data[1].origin.y,cur->data[1].origin.z,cur->data[1].width
-//                                                         ,cur->data[2].origin.x,cur->data[2].origin.y,cur->data[2].origin.z,cur->data[2].width
-//                                                         ,cur->data[3].origin.x,cur->data[3].origin.y,cur->data[3].origin.z,cur->data[3].width);
+void sendSumUpInfo(){
+    octoNodeSetItem_t* base= (&octoMapData)->octoNodeSet->setData;
+    octoNodeSetItem_t* cur=base+(&octoMapData)->octoNodeSet->fullQueueEntry;
+    u_int8_t nodesCount=0;
+    while(cur->next!=-1){
+        nodesCount++;
+        cpxPrintToConsole(LOG_TO_CRTP, "[SumUp-Info]: Seq = %d, \t(%d,%d,%d)@%d (%d,%d,%d)@%d (%d,%d,%d)@%d (%d,%d,%d)@%d\n", nodesCount,cur->data[0].origin.x,cur->data[0].origin.y,cur->data[0].origin.z,cur->data[0].width
+                                                        ,cur->data[1].origin.x,cur->data[1].origin.y,cur->data[1].origin.z,cur->data[1].width
+                                                        ,cur->data[2].origin.x,cur->data[2].origin.y,cur->data[2].origin.z,cur->data[2].width
+                                                        ,cur->data[3].origin.x,cur->data[3].origin.y,cur->data[3].origin.z,cur->data[3].width);
 
-//         pi_time_wait_us(1000 * 1000);
-//         cpxPrintToConsole(LOG_TO_CRTP, "[SumUp-Info]: Seq = %d.5, \t(%d,%d,%d)@%d (%d,%d,%d)@%d (%d,%d,%d)@%d (%d,%d,%d)@%d\n\n", nodesCount,cur->data[4].origin.x,cur->data[4].origin.y,cur->data[4].origin.z,cur->data[4].width
-//                 ,cur->data[5].origin.x,cur->data[5].origin.y,cur->data[5].origin.z,cur->data[5].width
-//                 ,cur->data[6].origin.x,cur->data[6].origin.y,cur->data[6].origin.z,cur->data[6].width
-//                 ,cur->data[7].origin.x,cur->data[7].origin.y,cur->data[7].origin.z,cur->data[7].width);
-//         cur=base+cur->next;
-//         pi_time_wait_us(1000 * 1000);
-//     }
-//     cpxPrintToConsole(LOG_TO_CRTP, "[SumUp-Info]: Finished!, totalPacketCount = %d\n\n", nodesCount);
-// }
+        pi_time_wait_us(1000 * 1000);
+        cpxPrintToConsole(LOG_TO_CRTP, "[SumUp-Info]: Seq = %d.5, \t(%d,%d,%d)@%d (%d,%d,%d)@%d (%d,%d,%d)@%d (%d,%d,%d)@%d\n\n", nodesCount,cur->data[4].origin.x,cur->data[4].origin.y,cur->data[4].origin.z,cur->data[4].width
+                ,cur->data[5].origin.x,cur->data[5].origin.y,cur->data[5].origin.z,cur->data[5].width
+                ,cur->data[6].origin.x,cur->data[6].origin.y,cur->data[6].origin.z,cur->data[6].width
+                ,cur->data[7].origin.x,cur->data[7].origin.y,cur->data[7].origin.z,cur->data[7].width);
+        cur=base+cur->next;
+        pi_time_wait_us(1000 * 1000);
+    }
+    cpxPrintToConsole(LOG_TO_CRTP, "[SumUp-Info]: Finished!, totalPacketCount = %d,\n\n", nodesCount);
+    cpxPrintToConsole(LOG_TO_CRTP, "[SumUp-Info] ---------Packetloss---------");
+    cpxPrintToConsole(LOG_TO_CRTP, "UAV1:%d,UAV1:%d,UAV1:%d,total:%d",UAV1count,UAV2count,UAV3count,TotalPacketCount);
+
+}
 
 void mapInit()
 {
@@ -139,56 +151,66 @@ void SplitAndAssembleExplore(){
 void ReceiveAndGive(void)
 {
     octoMap_t* octoMap = &octoMapData;
-    static uint16_t TotalPacketCount = 0;
-    static uint16_t Loss_UAV_1 = 0;
-    static uint16_t Loss_UAV_2 = 0;
-    static uint16_t Loss_UAV_3 = 0;
     cpxReceivePacketBlocking(CPX_F_APP, &packet);
     
     // Packet Loss Rate Calculate Module
+    // count and split packet from other UAV
     TotalPacketCount++;
-    if(TotalPacketCount % 100==0){
-        // cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Packet Loss Total: The GAP8 has processed %d Packet!\n\n", TotalPacketCount);
-    }
     uint8_t sourceId = packet.data[0];
     switch (sourceId)
     {
     case 0x00:
-        Loss_UAV_1++;
-        if(TotalPacketCount % 50==0){
-            // cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Packet Loss UAV1: The GAP8 has processed %d Packet!\n\n", Loss_UAV_1);
-            Loss_UAV_1 = 0;
+        {
+            UAV1count++;
+            break;
         }
-        break;
     case 0x01:
-        Loss_UAV_2++;
-        if(TotalPacketCount % 50==0){
-            // cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Packet Loss UAV2: The GAP8 has processed %d Packet!\n\n", Loss_UAV_2);
-            Loss_UAV_2 = 0;
+        {
+            UAV2count++;
+            break;
         }
-        break;
-    
     case 0x02:
-        Loss_UAV_3++;
-        if(TotalPacketCount % 50==0){
-            // cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Packet Loss UAV3: The GAP8 has processed %d Packet!\n\n", Loss_UAV_3);
-            Loss_UAV_3 = 0;
+        {
+            UAV3count++;
+            break;
         }
-        break;
     default:
-        // cpxPrintToConsole(LOG_TO_CRTP,"[Edge-GAP8]NO match sourceID!\n\n");
-        break;
+            break;
     }
 
     // Split and Assemble the packet to OctoMAP process
     uint8_t ReqType = packet.data[2];
+    uint16_t seq=(packet.data[3]<<8)|(packet.data[4]);
+    if(seq==FINISH_NUM){
+        switch(sourceId)
+        {
+            case 0x00:
+            {
+                UAV1finish=true;
+                break;
+            }
+            case 0x01:
+            {
+                UAV2finish=true;
+                break;   
+            }
+            case 0x02:
+            {
+                UAV3finish=true;
+                break;
+            }
+            default:    
+                break;
 
-    if (ReqType == MAPPING_REQ) {
+        }
+    }else if (ReqType == MAPPING_REQ) {
         SplitAndAssembleMapping();
         processMappingPacket();
-    }else if(ReqType == EXPLORE_REQ){
+    }else if(ReqType == EXPLORE_REQ && seq!=FINISH_NUM){
         SplitAndAssembleExplore();
         processExplorePacket();
+    }else{
+        cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-EDGE]ASSERT:Wrong process!\n");
     }
 }
 
@@ -199,7 +221,11 @@ void InitTask(void){
     mapInit();
     while(1) {
         ReceiveAndGive();
-        pi_time_wait_us(100 * 1000);
+        if(UAV1finish ==true && UAV2finish ==true &&UAV3finish == true){
+            sendSumUpInfo();
+            break;
+        }
+        pi_time_wait_us(10 * 1000);
     }
 }
 
