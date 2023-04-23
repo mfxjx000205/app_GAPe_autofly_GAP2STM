@@ -18,6 +18,7 @@
 
 //#include "../../../../aideck-latest/gap_riscv_toolchain_ubuntu/riscv32-unknown-elf/sys-include/math.h"
 #define PROBABILITY_MEM(octomap) (double)octomap->octoNodeSet->length / NODE_SET_SIZE
+#define JUMP_TIMES 5
 
 void UAVInit(uav_t* uav){
     for(int i = 0;i<6;++i){
@@ -139,7 +140,7 @@ void JumpLocalOp(coordinateF_t *current_point, example_measure_t* measurement,Co
             item_end_point.z);
         push_CoordinateQueue(paths, item_end_point);
         item_start_point = item_end_point;
-        length -= STRIDE;
+        length -= STRIDE * JUMP_TIMES;
     }
 }
 
