@@ -22,7 +22,7 @@ static uint16_t UAV2count=0;
 static uint16_t UAV3count=0;
 static bool UAV1flag=false;
 static bool UAV2flag=false;
-static bool UAV3flag=false;
+static bool UAV3flag=true;
 static bool HasPrinted=false;
 
 uav_t uavs[UAVS_LIDAR_NUM];
