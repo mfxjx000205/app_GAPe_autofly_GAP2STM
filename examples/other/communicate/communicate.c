@@ -31,7 +31,7 @@ void sendSumUpInfo(){
     octoNodeSetItem_t* base = (&octoMapData)->octoNodeSet->setData;
     octoNodeSetItem_t* cur = base+(&octoMapData)->octoNodeSet->fullQueueEntry;
     short length=(&octoMapData)->octoNodeSet->length;
-    u_int8_t nodesCount=0;
+    short nodesCount=0;
     cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]Finished! TotalPacketCount = %d,\n", nodesCount);
     cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]UAV1:%d, UAV2:%d, UAV3:%d, total:%d\n\n", UAV1count, UAV2count, UAV3count, TotalPacketCount);
     while(nodesCount < length){
