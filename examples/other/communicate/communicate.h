@@ -13,8 +13,10 @@
 #define PATH_REQ 3
 #define EXPLORE_RESP 4
 #define PATH_RESP 5
+#define METRICS 9
 
 #define MSG_LENGTH 10
+#define METRICS_MSG_LENGTH 10
 #define MAPPING_REQUEST_PAYLOAD_LENGTH_LIMIT 4
 typedef struct
 {
@@ -51,6 +53,14 @@ typedef struct
     example_measure_t measurement;
 } explore_req_payload_t;
 
+typedef struct{
+    uint8_t sourceId;
+    uint8_t destinationId;
+    uint8_t packetType;
+    uint16_t seq;
+    uint8_t payload[METRICS_MSG_LENGTH];
+} metrics_req_payload_t;
+
 typedef struct
 {
     uint8_t sourceId;
@@ -62,5 +72,6 @@ typedef struct
 
 
 void CPXListeningInit(void);
+void processMetrics();
 void itoa(uint8_t number,char*numberArray);
 #endif //__COMMUNICATE_H__

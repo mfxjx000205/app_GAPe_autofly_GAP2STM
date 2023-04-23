@@ -14,14 +14,14 @@ static CPXPacket_t packet;
 octoMap_t octoMapData;
 static mapping_req_packet_t mapping_req_packet;
 static explore_req_packet_t explore_req_packet;
+static metrics_req_payload_t metrics_req_payload;
 static RespInfo_t RespInfo;
 static uint16_t TotalPacketCount = 0;
 static uint16_t UAV1count=0;
 static uint16_t UAV2count=0;
 static uint16_t UAV3count=0;
-static bool UAV1finish=false;
-static bool UAV2finish=false;
-static bool UAV3finish=false;
+static bool Sendflag=false;
+static bool PacketLoss=false;
 
 uav_t uavs[UAVS_LIDAR_NUM];
 
@@ -29,7 +29,11 @@ void sendSumUpInfo(){
     octoNodeSetItem_t* base = (&octoMapData)->octoNodeSet->setData;
     octoNodeSetItem_t* cur = base+(&octoMapData)->octoNodeSet->fullQueueEntry;
     u_int8_t nodesCount=0;
-
+    if(PacketLoss==false){
+        cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]Finished! TotalPacketCount = %d,\n", nodesCount);
+        cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]UAV1:%d, UAV2:%d, UAV3:%d, total:%d\n\n", UAV1count, UAV2count, UAV3count, TotalPacketCount);
+        PacketLoss=true;
+    }
     while(cur->next != -1){
         nodesCount++;
         cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]Seq = %d, \t(%d,%d,%d)@%d (%d,%d,%d)@%d (%d,%d,%d)@%d (%d,%d,%d)@%d\n", 
@@ -37,7 +41,7 @@ void sendSumUpInfo(){
             cur->data[1].origin.x,cur->data[1].origin.y,cur->data[1].origin.z,cur->data[1].width,
             cur->data[2].origin.x,cur->data[2].origin.y,cur->data[2].origin.z,cur->data[2].width,
             cur->data[3].origin.x,cur->data[3].origin.y,cur->data[3].origin.z,cur->data[3].width);
-        pi_time_wait_us(1000 * 1000);
+        pi_time_wait_us(10 * 1000);
 
         cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]Seq = %d.5, \t(%d,%d,%d)@%d (%d,%d,%d)@%d (%d,%d,%d)@%d (%d,%d,%d)@%d\n", 
             nodesCount,cur->data[4].origin.x,cur->data[4].origin.y,cur->data[4].origin.z,cur->data[4].width,
@@ -45,17 +49,15 @@ void sendSumUpInfo(){
             cur->data[6].origin.x,cur->data[6].origin.y,cur->data[6].origin.z,cur->data[6].width,
             cur->data[7].origin.x,cur->data[7].origin.y,cur->data[7].origin.z,cur->data[7].width);
         cur = base+cur->next;
-        pi_time_wait_us(1000 * 1000);
+        pi_time_wait_us(10 * 1000);
     }
-    cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]Finished! TotalPacketCount = %d,\n", nodesCount);
-    cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]UAV1:%d, UAV2:%d, UAV3:%d, total:%d\n\n", UAV1count, UAV2count, UAV3count, TotalPacketCount);
+    Sendflag=true;
 }
 
 void mapInit()
 {
     octoMap_t* octoMap = &octoMapData;
     octoMapInit(octoMap);
-
     // print octoMap
     cpxPrintToConsole(LOG_TO_CRTP, "[MapInit]sizeof(octoNode) = %lu\n", sizeof(octoNode_t));
     cpxPrintToConsole(LOG_TO_CRTP, "[MapInit]octoTree->center = (%d, %d, %d), origin = (%d, %d, %d), resolution = %d, maxDepth = %d, width = %d\n", 
@@ -152,6 +154,13 @@ void SplitAndAssembleExplore(){
     //     explore_req_packet.sourceId, explore_req_packet.seq);
 }
 
+void processMetrics(){
+    memcpy(&metrics_req_payload, packet.data, sizeof(metrics_req_payload_t));
+    if(flag==false){
+        sendSumUpInfo();
+    }
+}
+
 void ReceiveAndGive(void)
 {
     octoMap_t* octoMap = &octoMapData;
@@ -184,37 +193,24 @@ void ReceiveAndGive(void)
 
     // Split and Assemble the packet to OctoMAP process
     uint8_t ReqType = packet.data[2];
-    uint16_t seq=(packet.data[3]<<8)|(packet.data[4]);
-    if(seq==FINISH_NUM){
-        switch(sourceId)
+    switch(ReqType){
+        case MAPPING_REQ:
         {
-            case 0x00:
-            {
-                UAV1finish=true;
-                break;
-            }
-            case 0x01:
-            {
-                UAV2finish=true;
-                break;   
-            }
-            case 0x02:
-            {
-                UAV3finish=true;
-                break;
-            }
-            default:    
-                break;
-
+            SplitAndAssembleMapping();
+            processMappingPacket();
+            break;
         }
-    }else if (ReqType == MAPPING_REQ) {
-        SplitAndAssembleMapping();
-        processMappingPacket();
-    }else if(ReqType == EXPLORE_REQ && seq!=FINISH_NUM){
-        SplitAndAssembleExplore();
-        processExplorePacket();
-    }else{
-        cpxPrintToConsole(LOG_TO_CRTP, "[GAP8-EDGE]ASSERT: Wrong process!\n");
+        case EXPLORE_REQ:
+        {
+            SplitAndAssembleExplore();
+            processExplorePacket();
+            break;
+        }
+        case METRICS:
+        {
+            processMetrics();
+            break;   
+        }
     }
 }
 
@@ -225,10 +221,6 @@ void InitTask(void){
     mapInit();
     while(1) {
         ReceiveAndGive();
-        if (UAV1finish && UAV2finish && UAV3finish){
-            sendSumUpInfo();
-            break;
-        }
         pi_time_wait_us(10 * 1000);
     }
 }
