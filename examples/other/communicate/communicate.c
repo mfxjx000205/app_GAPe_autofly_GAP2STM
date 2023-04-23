@@ -157,16 +157,28 @@ void processMetrics(){
         case 0x00:
         {
             UAV1flag = true;
+            cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo] UAV1: map:%d, explore:%d, receive:%d\n", 
+                                metrics_req_payload.metricsRequestPayload.mappingRequestCount,
+                                metrics_req_payload.metricsRequestPayload.exploreRequestCount,
+                                metrics_req_payload.metricsRequestPayload.receivePacketCount);
             break;
         }
         case 0x01:
         {
             UAV2flag = true;
+            cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo] UAV2: map:%d, explore:%d, receive:%d\n", 
+                                metrics_req_payload.metricsRequestPayload.mappingRequestCount,
+                                metrics_req_payload.metricsRequestPayload.exploreRequestCount,
+                                metrics_req_payload.metricsRequestPayload.receivePacketCount);
             break;
         }
         case 0x02:
         {
             UAV3flag = true;
+            cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo] UAV3: map:%d, explore:%d, receive:%d\n", 
+                                metrics_req_payload.metricsRequestPayload.mappingRequestCount,
+                                metrics_req_payload.metricsRequestPayload.exploreRequestCount,
+                                metrics_req_payload.metricsRequestPayload.receivePacketCount);
             break;
         }
         default:

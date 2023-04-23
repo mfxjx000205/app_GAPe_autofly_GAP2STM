@@ -16,7 +16,7 @@
 #define METRICS 9
 
 #define MSG_LENGTH 10
-#define METRICS_MSG_LENGTH 10
+#define METRICS_MSG_LENGTH 5
 #define MAPPING_REQUEST_PAYLOAD_LENGTH_LIMIT 4
 typedef struct
 {
@@ -58,7 +58,7 @@ typedef struct{
     uint8_t destinationId;
     uint8_t packetType;
     uint16_t seq;
-    uint8_t payload[METRICS_MSG_LENGTH];
+    uint16_t payload[METRICS_MSG_LENGTH];
 } metrics_req_packet_t;
 
 typedef struct
