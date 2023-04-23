@@ -28,28 +28,26 @@ uav_t uavs[UAVS_LIDAR_NUM];
 void sendSumUpInfo(){
     octoNodeSetItem_t* base = (&octoMapData)->octoNodeSet->setData;
     octoNodeSetItem_t* cur = base+(&octoMapData)->octoNodeSet->fullQueueEntry;
+    short length=(&octoMapData)->octoNodeSet->length;
     u_int8_t nodesCount=0;
     if(PacketLoss==false){
         cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]Finished! TotalPacketCount = %d,\n", nodesCount);
         cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]UAV1:%d, UAV2:%d, UAV3:%d, total:%d\n\n", UAV1count, UAV2count, UAV3count, TotalPacketCount);
         PacketLoss=true;
     }
-    while(cur->next != -1){
+    while(nodesCount < length){
         nodesCount++;
-        cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]Seq = %d, \t(%d,%d,%d)@%d (%d,%d,%d)@%d (%d,%d,%d)@%d (%d,%d,%d)@%d\n", 
-            nodesCount,cur->data[0].origin.x,cur->data[0].origin.y,cur->data[0].origin.z,cur->data[0].width,
-            cur->data[1].origin.x,cur->data[1].origin.y,cur->data[1].origin.z,cur->data[1].width,
-            cur->data[2].origin.x,cur->data[2].origin.y,cur->data[2].origin.z,cur->data[2].width,
-            cur->data[3].origin.x,cur->data[3].origin.y,cur->data[3].origin.z,cur->data[3].width);
+        cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]Seq = %d, \t",nodesCount);
+        for(uint8_t i=0;i<8;i++){
+            if(cur->data[i].logOdds==LOG_ODDS_FREE||cur->data[i].logOdds==LOG_ODDS_OCCUPIED)
+            {
+                cpxPrintToConsole(LOG_TO_CRTP, "(%d,%d,%d)#%d@%d ",cur->data[i].origin.x,cur->data[i].origin.y,cur->data[i].origin.z,cur->data[i].logOdds,cur->data[i].width);
+                pi_time_wait_us(1000);
+            }
+        }
+        cpxPrintToConsole(LOG_TO_CRTP, "\n");
         pi_time_wait_us(10 * 1000);
-
-        cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]Seq = %d.5, \t(%d,%d,%d)@%d (%d,%d,%d)@%d (%d,%d,%d)@%d (%d,%d,%d)@%d\n", 
-            nodesCount,cur->data[4].origin.x,cur->data[4].origin.y,cur->data[4].origin.z,cur->data[4].width,
-            cur->data[5].origin.x,cur->data[5].origin.y,cur->data[5].origin.z,cur->data[5].width,
-            cur->data[6].origin.x,cur->data[6].origin.y,cur->data[6].origin.z,cur->data[6].width,
-            cur->data[7].origin.x,cur->data[7].origin.y,cur->data[7].origin.z,cur->data[7].width);
         cur = base+cur->next;
-        pi_time_wait_us(10 * 1000);
     }
     Sendflag=true;
 }
