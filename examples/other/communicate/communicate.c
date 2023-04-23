@@ -20,6 +20,9 @@ static uint16_t TotalPacketCount = 0;
 static uint16_t UAV1count=0;
 static uint16_t UAV2count=0;
 static uint16_t UAV3count=0;
+static bool UAV1flag=false;
+static bool UAV2flag=false;
+static bool UAV3flag=false;
 static bool Sendflag=false;
 static bool PacketLoss=false;
 
@@ -51,7 +54,6 @@ void sendSumUpInfo(){
         cur = base+cur->next;
         pi_time_wait_us(10 * 1000);
     }
-    Sendflag=true;
 }
 
 void mapInit()
@@ -156,8 +158,27 @@ void SplitAndAssembleExplore(){
 
 void processMetrics(){
     memcpy(&metrics_req_payload, packet.data, sizeof(metrics_req_payload_t));
-    if(flag==false){
-        sendSumUpInfo();
+    switch(metrics_req_payload.sourceId){
+        case 0x00:
+        {
+            UAV1flag = true;
+            break;
+        }
+        case 0x01:
+        {
+            UAV2flag = true;
+            break;
+        }
+        case 0x02:
+        {
+            UAV3flag = true;
+            break;
+        }
+            default:
+            break;
+    }
+    if(UAV1flag && UAV2flag && UAV3flag){
+            sendSumUpInfo();
     }
 }
 
