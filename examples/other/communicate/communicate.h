@@ -47,18 +47,23 @@ typedef struct
     mapping_req_payload_t mappingRequestPayload[MAPPING_REQUEST_PAYLOAD_LENGTH_LIMIT];
 } mapping_req_packet_t;
 
+
 typedef struct
 {
     coordinate_t startPoint;
     example_measure_t measurement;
 } explore_req_payload_t;
-
+typedef struct {
+    uint16_t mappingRequestCount;
+    uint16_t exploreRequestCount;
+    uint16_t exploreResponseCount;
+} metrics_req_payload_t;
 typedef struct{
     uint8_t sourceId;
     uint8_t destinationId;
     uint8_t packetType;
     uint16_t seq;
-    uint16_t payload[METRICS_MSG_LENGTH];
+    metrics_req_payload_t metricsRequestPayload;
 } metrics_req_packet_t;
 
 typedef struct
