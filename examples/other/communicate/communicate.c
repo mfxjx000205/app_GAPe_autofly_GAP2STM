@@ -14,7 +14,7 @@ static CPXPacket_t packet;
 octoMap_t octoMapData;
 static mapping_req_packet_t mapping_req_packet;
 static explore_req_packet_t explore_req_packet;
-static metrics_req_payload_t metrics_req_payload;
+static metrics_req_packet_t metrics_req_payload;
 static RespInfo_t RespInfo;
 static uint16_t TotalPacketCount = 0;
 static uint16_t UAV1count=0;
@@ -23,8 +23,7 @@ static uint16_t UAV3count=0;
 static bool UAV1flag=false;
 static bool UAV2flag=false;
 static bool UAV3flag=false;
-static bool Sendflag=false;
-static bool PacketLoss=false;
+static bool HasPrinted=false;
 
 uav_t uavs[UAVS_LIDAR_NUM];
 
@@ -33,11 +32,8 @@ void sendSumUpInfo(){
     octoNodeSetItem_t* cur = base+(&octoMapData)->octoNodeSet->fullQueueEntry;
     short length=(&octoMapData)->octoNodeSet->length;
     u_int8_t nodesCount=0;
-    if(PacketLoss==false){
-        cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]Finished! TotalPacketCount = %d,\n", nodesCount);
-        cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]UAV1:%d, UAV2:%d, UAV3:%d, total:%d\n\n", UAV1count, UAV2count, UAV3count, TotalPacketCount);
-        PacketLoss=true;
-    }
+    cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]Finished! TotalPacketCount = %d,\n", nodesCount);
+    cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]UAV1:%d, UAV2:%d, UAV3:%d, total:%d\n\n", UAV1count, UAV2count, UAV3count, TotalPacketCount);
     while(nodesCount < length){
         nodesCount++;
         cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]Seq = %d, \t",nodesCount);
@@ -52,6 +48,7 @@ void sendSumUpInfo(){
         pi_time_wait_us(10 * 1000);
         cur = base+cur->next;
     }
+    HasPrinted=true;
 }
 
 void mapInit()
@@ -155,7 +152,7 @@ void SplitAndAssembleExplore(){
 }
 
 void processMetrics(){
-    memcpy(&metrics_req_payload, packet.data, sizeof(metrics_req_payload_t));
+    memcpy(&metrics_req_payload, packet.data, sizeof(metrics_req_packet_t));
     switch(metrics_req_payload.sourceId){
         case 0x00:
         {
@@ -172,10 +169,10 @@ void processMetrics(){
             UAV3flag = true;
             break;
         }
-            default:
+        default:
             break;
     }
-    if(UAV1flag && UAV2flag && UAV3flag){
+    if(UAV1flag && UAV2flag && UAV3flag && (!HasPrinted)){
             sendSumUpInfo();
     }
 }

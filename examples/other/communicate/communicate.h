@@ -59,7 +59,7 @@ typedef struct{
     uint8_t packetType;
     uint16_t seq;
     uint8_t payload[METRICS_MSG_LENGTH];
-} metrics_req_payload_t;
+} metrics_req_packet_t;
 
 typedef struct
 {
