@@ -41,21 +41,23 @@ void sendSumUpInfo(){
         cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]Seq = %d\n",nodesCount);
         for(uint8_t i=0;i<8;i++){
             if (cur->data[i].logOdds == LOG_ODDS_FREE) {
-                cpxPrintToConsole(LOG_TO_CRTP, "[FN](%d,%d,%d)#%d@%d\n", 
+                cpxPrintToConsole(LOG_TO_CRTP, "[FN](%d,%d,%d)#%d@%d$%d\n", 
                     cur->data[i].origin.x,
                     cur->data[i].origin.y,
                     cur->data[i].origin.z,
                     cur->data[i].logOdds,
-                    cur->data[i].width);
+                    cur->data[i].width,
+                    cur->data[i].uav_id);
                 pi_time_wait_us(1 * 1000);
             }
             if (cur->data[i].logOdds == LOG_ODDS_OCCUPIED) {
-                cpxPrintToConsole(LOG_TO_CRTP, "[ON](%d,%d,%d)#%d@%d\n",
+                cpxPrintToConsole(LOG_TO_CRTP, "[ON](%d,%d,%d)#%d@%d$%d\n",
                     cur->data[i].origin.x,
                     cur->data[i].origin.y,
                     cur->data[i].origin.z,
                     cur->data[i].logOdds,
-                    cur->data[i].width);
+                    cur->data[i].width,
+                    cur->data[i].uav_id);
                 pi_time_wait_us(1 * 1000);
             }
         }
