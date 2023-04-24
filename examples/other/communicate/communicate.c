@@ -21,56 +21,47 @@ static uint16_t UAV1count=0;
 static uint16_t UAV2count=0;
 static uint16_t UAV3count=0;
 static bool UAV1flag=false;
-static bool UAV2flag=false;
+static bool UAV2flag=true;
 static bool UAV3flag=true;
 static bool HasPrinted=false;
 
 uav_t uavs[UAVS_LIDAR_NUM];
 
 void sendSumUpInfo(){
-    // print packet loss
+    octoNodeSetItem_t* base = (&octoMapData)->octoNodeSet->setData;
+    octoNodeSetItem_t* cur = base+(&octoMapData)->octoNodeSet->fullQueueEntry;
+    short length=(&octoMapData)->octoNodeSet->length;
+    short nodesCount=0;
     cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]TotalPacketCount = %d\n", TotalPacketCount);
+    cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]NodesCOunt = %d\n", nodesCount);
     cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]UAV1: %d, UAV2: %d, UAV3: %d, total: %d\n\n", 
         UAV1count, UAV2count, UAV3count, TotalPacketCount);
-    // print octoMap
-    cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]Node format: [FN/ON](x,y,z)#logOdds@width$uav_id\n\n");
-    octoNodeSetItem_t* base = (&octoMapData)->octoNodeSet->setData;
-    octoNodeSetItem_t* cur = base + (&octoMapData)->octoNodeSet->fullQueueEntry;
-    short length = (&octoMapData)->octoNodeSet->length;
-    short nodesCount = 0;
-    short freeCount = 0;
-    short occupiedCount = 0;
-    while (nodesCount < length) {
+    while(nodesCount < length){
         nodesCount++;
         cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]Seq = %d\n",nodesCount);
-        for (uint8_t i = 0; i < 8; i++) {
+        for(uint8_t i=0;i<8;i++){
             if (cur->data[i].logOdds == LOG_ODDS_FREE) {
-                cpxPrintToConsole(LOG_TO_CRTP, "[FN](%d,%d,%d)#%d@%d$%d\n", 
+                cpxPrintToConsole(LOG_TO_CRTP, "[FN](%d,%d,%d)#%d@%d\n", 
                     cur->data[i].origin.x,
                     cur->data[i].origin.y,
                     cur->data[i].origin.z,
                     cur->data[i].logOdds,
-                    cur->data[i].width,
-                    cur->data[i].uav_id);
-                freeCount++;
+                    cur->data[i].width);
                 pi_time_wait_us(1 * 1000);
             }
             if (cur->data[i].logOdds == LOG_ODDS_OCCUPIED) {
-                cpxPrintToConsole(LOG_TO_CRTP, "[ON](%d,%d,%d)#%d@%d$%d\n",
+                cpxPrintToConsole(LOG_TO_CRTP, "[ON](%d,%d,%d)#%d@%d\n",
                     cur->data[i].origin.x,
                     cur->data[i].origin.y,
                     cur->data[i].origin.z,
                     cur->data[i].logOdds,
-                    cur->data[i].width,
-                    cur->data[i].uav_id);
-                occupiedCount++;
+                    cur->data[i].width);
                 pi_time_wait_us(1 * 1000);
             }
         }
         pi_time_wait_us(10 * 1000);
         cur = base+cur->next;
     }
-    cpxPrintToConsole(LOG_TO_CRTP, "[SumUpInfo]freeCount = %d, occupiedCount = %d\n\n", freeCount, occupiedCount);
     HasPrinted=true;
 }
 
