@@ -42,8 +42,8 @@ setIndex_t octoNodeSetMalloc(octoNodeSet_t *nodeSet)
         // insert to full queue
         setIndex_t tmp = nodeSet->fullQueueEntry;
         nodeSet->fullQueueEntry = candidate;
-        cpxPrintToConsole(LOG_TO_CRTP, "[octoNodeSetMalloc]freeQueueEntry, fullQueueEntry: %d, %d\n",
-            nodeSet->freeQueueEntry, nodeSet->freeQueueEntry);
+        // cpxPrintToConsole(LOG_TO_CRTP, "[octoNodeSetMalloc]freeQueueEntry, fullQueueEntry: %d, %d\n",
+            // nodeSet->freeQueueEntry, nodeSet->freeQueueEntry);
         nodeSet->setData[candidate].next = tmp;
         ++nodeSet->length;
         return candidate;
