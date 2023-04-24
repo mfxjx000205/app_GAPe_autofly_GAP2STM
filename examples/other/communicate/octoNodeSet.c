@@ -5,7 +5,6 @@
 #include "cpx.h"
 void octoNodeSetInit(octoNodeSet_t *nodeSet)
 {
-    // cpxPrintToConsole(LOG_TO_CRTP, "octoNodeSetInit\n");
     setIndex_t i;
     nodeSet->freeQueueEntry = 0;
     nodeSet->fullQueueEntry = -1;
@@ -33,20 +32,18 @@ setIndex_t octoNodeSetMalloc(octoNodeSet_t *nodeSet)
 {
     if (nodeSet->freeQueueEntry == -1)
     {
-        cpxPrintToConsole(LOG_TO_CRTP,"Full of sets!!! can not malloc!!!\n");
+        cpxPrintToConsole(LOG_TO_CRTP, "[octoNodeSetMalloc]Full of sets!!! Can not malloc!!!\n\n");
         return -1;
     }
     else
     {
         setIndex_t candidate = nodeSet->freeQueueEntry;
-        //printf("SetMalloc candidate: %d\n",candidate);
         nodeSet->freeQueueEntry = nodeSet->setData[candidate].next;
-        //printf("SetMalloc freeQueueEntry: %d\n",nodeSet->freeQueueEntry);
         // insert to full queue
         setIndex_t tmp = nodeSet->fullQueueEntry;
-        //printf("SetMalloc tmp: %d\n",tmp);
         nodeSet->fullQueueEntry = candidate;
-        //printf("SetMalloc fullQueueEntry: %d\n\n",nodeSet->freeQueueEntry);
+        cpxPrintToConsole(LOG_TO_CRTP, "[octoNodeSetMalloc]freeQueueEntry, fullQueueEntry: %d, %d\n",
+            nodeSet->freeQueueEntry, nodeSet->freeQueueEntry);
         nodeSet->setData[candidate].next = tmp;
         ++nodeSet->length;
         return candidate;
