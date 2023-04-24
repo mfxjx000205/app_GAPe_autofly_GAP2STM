@@ -155,17 +155,8 @@ void processExplorePacket(){
 
 void SplitAndAssembleMapping(){
     memcpy(&mapping_req_packet, packet.data, sizeof(mapping_req_packet_t));
-    cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]Receive mapping request from: %d, seq: %d, payloadLength: %d\n", 
+    cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]CPX: Receive mapping request from: %d, seq: %d, payloadLength: %d\n", 
         mapping_req_packet.sourceId, mapping_req_packet.seq, mapping_req_packet.mappingRequestPayloadLength);
-    for (int i = 0; i < mapping_req_packet.mappingRequestPayloadLength; i++)
-    {
-        cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]payload[%d]: (%d, %d, %d) -> (%d, %d, %d), mergedNums: %d\n", 
-            i,
-            mapping_req_packet.mappingRequestPayload[i].startPoint.x, mapping_req_packet.mappingRequestPayload[i].startPoint.y, mapping_req_packet.mappingRequestPayload[i].startPoint.z,
-            mapping_req_packet.mappingRequestPayload[i].endPoint.x, mapping_req_packet.mappingRequestPayload[i].endPoint.y, mapping_req_packet.mappingRequestPayload[i].endPoint.z,
-            mapping_req_packet.mappingRequestPayload[i].mergedNums);
-        pi_time_wait_us(1 * 1000);
-    }
 }
 
 void SplitAndAssembleExplore(){
