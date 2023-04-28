@@ -21,8 +21,8 @@ static uint16_t UAV1count=0;
 static uint16_t UAV2count=0;
 static uint16_t UAV3count=0;
 static bool UAV1flag=false;
-static bool UAV2flag=true;
-static bool UAV3flag=true;
+static bool UAV2flag=false;
+static bool UAV3flag=false;
 static bool HasPrinted=false;
 
 uav_t uavs[UAVS_LIDAR_NUM];
@@ -157,8 +157,8 @@ void processExplorePacket(){
 
 void SplitAndAssembleMapping(){
     memcpy(&mapping_req_packet, packet.data, sizeof(mapping_req_packet_t));
-    cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]CPX: Receive mapping request from: %d, seq: %d, payloadLength: %d\n", 
-        mapping_req_packet.sourceId, mapping_req_packet.seq, mapping_req_packet.mappingRequestPayloadLength);
+    // cpxPrintToConsole(LOG_TO_CRTP, "[Edge-GAP8]CPX: Receive mapping request from: %d, seq: %d, payloadLength: %d\n", 
+    //     mapping_req_packet.sourceId, mapping_req_packet.seq, mapping_req_packet.mappingRequestPayloadLength);
 }
 
 void SplitAndAssembleExplore(){
