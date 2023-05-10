@@ -24,11 +24,11 @@ static bool UAV1flag=false;
 static bool UAV2flag=false;
 static bool UAV3flag=false;
 static bool HasPrinted=false;
-
 uav_t uavs[UAVS_LIDAR_NUM];
 
+
 void sendSumUpInfo(){
-    octoNodeSetItem_t* base = (&octoMapData)->octoNodeSet->setData;
+    octoNodeSetItem_t *base = (&octoMapData)->octoNodeSet->setData;
     octoNodeSetItem_t* cur = base+(&octoMapData)->octoNodeSet->fullQueueEntry;
     short length=(&octoMapData)->octoNodeSet->length;
     short nodesCount=0;
@@ -153,7 +153,6 @@ void processExplorePacket(){
         return;
     }
 }
-
 
 void SplitAndAssembleMapping(){
     memcpy(&mapping_req_packet, packet.data, sizeof(mapping_req_packet_t));
